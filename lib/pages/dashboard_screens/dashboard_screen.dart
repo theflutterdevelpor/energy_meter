@@ -169,7 +169,6 @@ class _DashboardPageState extends State<DashboardPage> {
             if (threePhase.containsKey('power')) {
               powerValue = (threePhase['power'] as num).toDouble();
 
-              // 🔥 FIX: Agar value 100 se zyada hai to Watts hai, KW mein convert
               if (powerValue > 100) {
                 powerValue = powerValue / 1000;
                 debugPrint("⚡ Converted Watts to KW: ${powerValue}KW");
@@ -177,12 +176,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 debugPrint("⚡ Power from threePhase: ${powerValue}KW");
               }
 
-              // 🔥 Update threePhase map with KW value
               threePhase['power'] = powerValue;
             }
           }
 
-          // Same fix for other power fields
           if (powerValue == 0.0 && parsed.containsKey('power_w')) {
             powerValue = (parsed['power_w'] as num).toDouble();
             if (powerValue > 100) {
@@ -221,13 +218,11 @@ class _DashboardPageState extends State<DashboardPage> {
             monthEng = (parsed['month_energy'] as num).toDouble();
           }
 
-          // 🔥 Store as KW already
-          parsed['power_w'] = powerValue * 1000; // Store Watts for other widgets
+          parsed['power_w'] = powerValue * 1000;
           parsed['frequency'] = freqValue;
           parsed['today_energy'] = todayEng;
           parsed['month_energy'] = monthEng;
 
-          // 🔥 Ensure threePhase has KW value
           if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
             (parsed['threePhase'] as Map)['power'] = powerValue;
           }
