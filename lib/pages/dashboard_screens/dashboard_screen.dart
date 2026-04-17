@@ -12,7 +12,6 @@ import '../../services/energy_socket.dart';
 import '../../services/profile_services.dart';
 import '../../widgets/Energy-Maintenance-Card.dart';
 import '../../widgets/bar_chart.dart';
-import '../../widgets/configration_screen.dart';
 import '../../widgets/energystate_grid.dart';
 import '../../widgets/notification.dart';
 import '../../widgets/profile_drawer.dart';
@@ -362,12 +361,6 @@ class _DashboardPageState extends State<DashboardPage> {
       debugPrint("❌ Exception: $e");
     }
   }
-
-
-
-
-
-
 
   Future<void> _loadDashboardData() async {
     try {
