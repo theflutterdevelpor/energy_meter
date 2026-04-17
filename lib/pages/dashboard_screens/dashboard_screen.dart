@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -31,7 +32,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   final SocketService socketService = SocketService();
 
-
+  Timer? _reconnectTimer;
 
   DashboardData? dashboardData;
   Map<String, dynamic>? realtimeData;
@@ -56,6 +57,7 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _loadDeviceIds();
     _loadDashboardData();
+    _startReconnectTimer();
   }
 
   Future<void> _loadDeviceIds() async {
@@ -264,9 +266,28 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  void _startReconnectTimer() {
+    _reconnectTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+      _checkSocketConnection();
+    });
+  }
+
+  void _checkSocketConnection() {
+    if (!_isSocketConnected && _selectedDeviceId != null) {
+      debugPrint("?? Socket disconnected, attempting reconnect...");
+      _connectAndJoinSocket();
+    }
+  }
+
+  void _stopReconnectTimer() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+  }
+
   @override
   void dispose() {
-    debugPrint("🧹 Dashboard dispose - Cleaning up socket");
+    debugPrint("?? Dashboard dispose - Cleaning up socket");
+    _stopReconnectTimer();
     if (_currentEventName != null) {
       socketService.socket?.off(_currentEventName!);
     }
