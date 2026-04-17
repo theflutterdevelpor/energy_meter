@@ -86,7 +86,6 @@ class _DashboardPageState extends State<DashboardPage> {
       debugPrint("📱 Device IDs => $_deviceIds");
       debugPrint("📌 Default Device => $_selectedDeviceId");
 
-      // ✅ socket connect AFTER device selected
       if (_selectedDeviceId != null) {
         await _connectAndJoinSocket();
       }
@@ -108,14 +107,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
     debugPrint("🔑 Token found, connecting socket");
 
-    // ✅ Disconnect existing socket if any
     if (socketService.socket?.connected ?? false) {
       socketService.disconnect();
     }
 
     socketService.connect(token);
 
-    // ✅ Remove all existing listeners
     socketService.socket?.offAny();
 
     socketService.socket?.onConnect((_) {
