@@ -9,6 +9,7 @@ import '../../models/response/device_model.dart';
 import '../../models/response/profile_response.dart';
 import '../../services/device_service.dart';
 import '../../services/energy_socket.dart';
+import '../../services/notification_service.dart';
 import '../../services/profile_services.dart';
 import '../../widgets/Energy-Maintenance-Card.dart';
 import '../../widgets/bar_chart.dart';
@@ -41,6 +42,7 @@ class _DashboardPageState extends State<DashboardPage> {
   List<Device> devices = [];
   Device? device;
   bool isLoading = true;
+  int _unreadCount=0;
   bool _isSocketConnected = false;
   final String baseUrl = 'http://3.231.62.206:5000/api/v1';
 
@@ -57,6 +59,17 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadDeviceIds();
     _loadDashboardData();
     _startReconnectTimer();
+    _fetchUnreadCount();
+  }
+
+
+  Future<void> _fetchUnreadCount() async {
+    int count = await NotificationApi.getUnreadCount();
+    if (mounted) {
+      setState(() {
+        _unreadCount = count;
+      });
+    }
   }
 
   Future<void> _loadDeviceIds() async {
@@ -498,14 +511,44 @@ class _DashboardPageState extends State<DashboardPage> {
           //   },
           // ),
 
-          IconButton(onPressed: () {
-
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            Navigator.push(context, MaterialPageRoute(builder: (context){
-              return  NotificationScreen();
-            }));
-
-          }, icon: const Icon(Icons.notifications_none, color: Colors.white70,)),
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotificationScreen()),
+                  ).then((_) => _fetchUnreadCount());
+                },
+                icon: const Icon(Icons.notifications_none),
+              ),
+              if (_unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      _unreadCount > 9 ? '9+' : '$_unreadCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(

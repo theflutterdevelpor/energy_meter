@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/response/profile_response.dart';
 import '../../services/auth_services.dart';
+import '../../services/notification_service.dart';
 import '../../services/profile_services.dart';
 import '../../widgets/apparent_power.dart';
 import '../../widgets/aqi_chart.dart';
@@ -32,6 +33,7 @@ class _chartPageState extends State<chartPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String selectedFilter = "Today";
   String selectedPhase = "3-PHASE";
+  int _unreadCount=0;
 
 
   final List<String> filterOptions = [
@@ -41,6 +43,16 @@ class _chartPageState extends State<chartPage> {
     "30 Days",
     "6 Months",
   ];
+
+
+  Future<void> _fetchUnreadCount() async {
+    int count = await NotificationApi.getUnreadCount();
+    if (mounted) {
+      setState(() {
+        _unreadCount = count;
+      });
+    }
+  }
 
   Widget _buildGlobalDropdown() {
     return ClipRRect(
@@ -171,13 +183,43 @@ class _chartPageState extends State<chartPage> {
           style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context){
-                return  NotificationScreen();
-              }));
-            },
-            icon: const Icon(Icons.notifications_none,color: Colors.grey,),
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotificationScreen()),
+                  ).then((_) => _fetchUnreadCount());
+                },
+                icon: const Icon(Icons.notifications_none),
+              ),
+              if (_unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      _unreadCount > 9 ? '9+' : '$_unreadCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
