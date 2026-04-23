@@ -64,11 +64,20 @@ class _DashboardPageState extends State<DashboardPage> {
 
 
   Future<void> _fetchUnreadCount() async {
-    int count = await NotificationApi.getUnreadCount();
-    if (mounted) {
-      setState(() {
-        _unreadCount = count;
-      });
+    try {
+      final response = await NotificationApi.getMyNotifications();
+
+      final filteredUnread = response.data.where((n) {
+        return n.type == 'electricity_alert' && !n.read;
+      }).length;
+
+      if (mounted) {
+        setState(() {
+          _unreadCount = filteredUnread;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching unread count: $e");
     }
   }
 
