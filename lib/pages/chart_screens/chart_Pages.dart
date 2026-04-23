@@ -43,6 +43,11 @@ class _chartPageState extends State<chartPage> {
     "30 Days",
     "6 Months",
   ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchUnreadCount();
+  }
 
 
   Future<void> _fetchUnreadCount() async {
