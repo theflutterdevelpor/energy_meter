@@ -204,7 +204,11 @@ class _chartPageState extends State<chartPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => NotificationScreen()),
-                  ).then((_) => _fetchUnreadCount());
+                  ).then((value) {
+                    if (value == true) {
+                      _fetchUnreadCount();
+                    }
+                  });
                 },
                 icon: const Icon(Icons.notifications_none),
               ),

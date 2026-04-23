@@ -14,6 +14,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
 
   String _selectedTab = 'All';
+  bool _hasChanges = false;
 
 
   bool _isLoading = true;
@@ -72,6 +73,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             .map((n) => n.copyWith(read: true))
             .toList();
       });
+      _hasChanges = true;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -97,6 +99,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           _notifications[index] = notification.copyWith(read: true);
         }
       });
+      _hasChanges = true;
     }
   }
 
@@ -143,7 +146,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, _hasChanges);
             },
         ),
         title: const Text(
