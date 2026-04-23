@@ -16,6 +16,7 @@ class EnergyPowerChart extends StatefulWidget {
 class _EnergyPowerChartState extends State<EnergyPowerChart> {
   List<ChartData> data = [];
   bool isLoading = false;
+  double maxY = 0;
   late ZoomPanBehavior _zoomPanBehavior;
   late TooltipBehavior _tooltipBehavior;
 
@@ -140,6 +141,7 @@ class _EnergyPowerChartState extends State<EnergyPowerChart> {
       }
 
       data = chartData;
+      _calculateMaxY(chartData);
       debugPrint(" Chart data loaded: ${data.length} entries");
     } catch (e) {
       debugPrint(' API ERROR: $e');
@@ -171,6 +173,23 @@ class _EnergyPowerChartState extends State<EnergyPowerChart> {
   String _getMonthAbbr(int month) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[month - 1];
+  }
+
+  double tempMax = 0;
+
+  void _calculateMaxY(List<ChartData> chartData) {
+    double tempMax = 0;
+    for (var d in chartData) {
+      tempMax = [
+        tempMax,
+        d.phase1,
+        d.phase2,
+        d.phase3,
+        d.phase4,
+      ].reduce((a, b) => a > b ? a : b);
+    }
+    maxY = (tempMax * 1.2).ceilToDouble();
+    if (maxY == 0) maxY = 100; // Default value if all data is zero
   }
 
   @override
@@ -354,9 +373,9 @@ class _EnergyPowerChartState extends State<EnergyPowerChart> {
         autoScrollingMode: AutoScrollingMode.start,
       ),
       primaryYAxis: NumericAxis(
-        minimum: 0,
-        maximum: 100,
-        interval: 50 ,
+      minimum: 0,
+      maximum: maxY == 0 ? 100 : maxY,
+      interval: maxY == 0 ? 50 : maxY / 4,
         labelStyle: const TextStyle(color: Colors.white70, fontSize: 11),
         axisLine: const AxisLine(width: 1, color: Colors.white24),
         majorGridLines: const MajorGridLines(
