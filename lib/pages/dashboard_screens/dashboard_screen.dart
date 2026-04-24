@@ -20,6 +20,7 @@ import '../../widgets/profile_drawer.dart';
 
 
 class DashboardPage extends StatefulWidget {
+
   const DashboardPage({super.key});
 
   @override
@@ -29,7 +30,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   final SocketService socketService = SocketService();
 
   Timer? _reconnectTimer;
@@ -40,12 +40,13 @@ class _DashboardPageState extends State<DashboardPage> {
   List<String> _deviceIds = [];
   Map<String, String> _deviceIdToObjectId = {};
   List<Device> devices = [];
+  Timer? _autoRefreshTimer;
   Device? device;
   bool isLoading = true;
   int _unreadCount=0;
   bool _isSocketConnected = false;
   final String baseUrl = 'http://3.231.62.206:5000/api/v1';
-
+  int _refreshTrigger = 0;
   String? _currentEventName;
 
 
@@ -60,6 +61,29 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadDashboardData();
     _startReconnectTimer();
     _fetchUnreadCount();
+    _startAutoRefresh();
+
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer = Timer.periodic(
+      const Duration(seconds: 10),
+          (timer) {
+        if (!mounted) return;
+
+        debugPrint("🔄 Auto refreshing dashboard...");
+
+        if (_selectedDeviceId != null) {
+          fetchDeviceData(_selectedDeviceId!);
+        }
+
+        _loadDashboardData();
+
+        socketService.socket?.emit("get-realtime", {
+          "deviceId": _selectedDeviceId
+        });
+      },
+    );
   }
 
 
@@ -164,6 +188,112 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  // void _listenRealtime() {
+  //   if (_selectedDeviceId == null) return;
+  //
+  //   final eventName = "ESensor-$_selectedDeviceId";
+  //   _currentEventName = eventName;
+  //
+  //   debugPrint("🎧 Setting up listener for: $eventName");
+  //
+  //   socketService.socket?.off(eventName);
+  //
+  //   socketService.socket?.on(eventName, (data) {
+  //     debugPrint("📡 RAW SOCKET DATA RECEIVED");
+  //     debugPrint("📦 Data: $data");
+  //     debugPrint("📦 COMPLETE SOCKET DATA: $data");
+  //     if (data is Map) {
+  //       debugPrint("🔑 ALL KEYS: ${data.keys}");
+  //     }
+  //
+  //     Map<String, dynamic> parsed = {};
+  //
+  //     try {
+  //       if (data is Map) {
+  //         parsed = Map<String, dynamic>.from(data);
+  //
+  //         double powerValue = 0.0;
+  //
+  //         if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
+  //           final threePhase = parsed['threePhase'] as Map;
+  //           if (threePhase.containsKey('power')) {
+  //             powerValue = (threePhase['power'] as num).toDouble();
+  //
+  //             if (powerValue > 100) {
+  //               powerValue = powerValue / 1000;
+  //               debugPrint("⚡ Converted Watts to KW: ${powerValue}KW");
+  //             } else {
+  //               debugPrint("⚡ Power from threePhase: ${powerValue}KW");
+  //             }
+  //
+  //             threePhase['power'] = powerValue;
+  //           }
+  //         }
+  //
+  //         if (powerValue == 0.0 && parsed.containsKey('power_w')) {
+  //           powerValue = (parsed['power_w'] as num).toDouble();
+  //           if (powerValue > 100) {
+  //             powerValue = powerValue / 1000;
+  //           }
+  //           debugPrint("⚡ Power from power_w: ${powerValue}KW");
+  //         }
+  //
+  //         if (powerValue == 0.0 && parsed.containsKey('power')) {
+  //           powerValue = (parsed['power'] as num).toDouble();
+  //           if (powerValue > 100) {
+  //             powerValue = powerValue / 1000;
+  //           }
+  //           debugPrint("⚡ Power from power: ${powerValue}KW");
+  //         }
+  //
+  //         double freqValue = 50.0;
+  //         if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
+  //           final threePhase = parsed['threePhase'] as Map;
+  //           if (threePhase.containsKey('frequency')) {
+  //             freqValue = (threePhase['frequency'] as num).toDouble();
+  //           }
+  //         } else if (parsed.containsKey('frequency')) {
+  //           freqValue = (parsed['frequency'] as num).toDouble();
+  //         }
+  //
+  //         debugPrint("⚡ FINAL Total Power: ${powerValue}KW");
+  //         debugPrint("📊 Frequency: ${freqValue}Hz");
+  //
+  //         double todayEng = 0.0;
+  //         double monthEng = 0.0;
+  //         if (parsed.containsKey('today_energy')) {
+  //           todayEng = (parsed['today_energy'] as num).toDouble();
+  //         }
+  //         if (parsed.containsKey('month_energy')) {
+  //           monthEng = (parsed['month_energy'] as num).toDouble();
+  //         }
+  //
+  //         parsed['power_w'] = powerValue * 1000;
+  //         parsed['frequency'] = freqValue;
+  //         parsed['today_energy'] = todayEng;
+  //         parsed['month_energy'] = monthEng;
+  //
+  //         if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
+  //           (parsed['threePhase'] as Map)['power'] = powerValue;
+  //         }
+  //       }
+  //
+  //       parsed['deviceId'] = _selectedDeviceId;
+  //
+  //     } catch (e) {
+  //       debugPrint("❌ Parse error: $e");
+  //     }
+  //
+  //     if (!mounted) return;
+  //
+  //     setState(() {
+  //       realtimeData = Map.from(parsed);
+  //     });
+  //
+  //     debugPrint("✅ FINAL realtimeData => $realtimeData");
+  //   });
+  // }
+
   void _listenRealtime() {
     if (_selectedDeviceId == null) return;
 
@@ -184,86 +314,113 @@ class _DashboardPageState extends State<DashboardPage> {
         if (data is Map) {
           parsed = Map<String, dynamic>.from(data);
 
-          double powerValue = 0.0;
-
+          // Check for threePhase data and convert power if needed
           if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
             final threePhase = parsed['threePhase'] as Map;
             if (threePhase.containsKey('power')) {
-              powerValue = (threePhase['power'] as num).toDouble();
-
+              double powerValue = (threePhase['power'] as num).toDouble();
+              // Convert to kW if value is in Watts (value > 100)
               if (powerValue > 100) {
                 powerValue = powerValue / 1000;
                 debugPrint("⚡ Converted Watts to KW: ${powerValue}KW");
               } else {
                 debugPrint("⚡ Power from threePhase: ${powerValue}KW");
               }
-
               threePhase['power'] = powerValue;
             }
-          }
 
-          if (powerValue == 0.0 && parsed.containsKey('power_w')) {
-            powerValue = (parsed['power_w'] as num).toDouble();
-            if (powerValue > 100) {
-              powerValue = powerValue / 1000;
-            }
-            debugPrint("⚡ Power from power_w: ${powerValue}KW");
-          }
-
-          if (powerValue == 0.0 && parsed.containsKey('power')) {
-            powerValue = (parsed['power'] as num).toDouble();
-            if (powerValue > 100) {
-              powerValue = powerValue / 1000;
-            }
-            debugPrint("⚡ Power from power: ${powerValue}KW");
-          }
-
-          double freqValue = 50.0;
-          if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
-            final threePhase = parsed['threePhase'] as Map;
+            // Also extract frequency
             if (threePhase.containsKey('frequency')) {
-              freqValue = (threePhase['frequency'] as num).toDouble();
+              double freqValue = (threePhase['frequency'] as num).toDouble();
+              debugPrint("📊 Frequency: ${freqValue}Hz");
             }
-          } else if (parsed.containsKey('frequency')) {
-            freqValue = (parsed['frequency'] as num).toDouble();
           }
 
-          debugPrint("⚡ FINAL Total Power: ${powerValue}KW");
-          debugPrint("📊 Frequency: ${freqValue}Hz");
+          // Extract individual phase data (Phase A, B, C)
+          // Phase 1 (A) - voltage, current, power
+          if (parsed.containsKey('phaseOne') && parsed['phaseOne'] is Map) {
+            final phase1 = parsed['phaseOne'] as Map;
 
-          double todayEng = 0.0;
-          double monthEng = 0.0;
-          if (parsed.containsKey('today_energy')) {
-            todayEng = (parsed['today_energy'] as num).toDouble();
-          }
-          if (parsed.containsKey('month_energy')) {
-            monthEng = (parsed['month_energy'] as num).toDouble();
+            // Convert power if in Watts
+            if (phase1.containsKey('power')) {
+              double powerValue = (phase1['power'] as num).toDouble();
+              if (powerValue > 100) {
+                powerValue = powerValue / 1000;
+                phase1['power'] = powerValue;
+              }
+            }
+            debugPrint("🔴 PHASE A - Power: ${phase1['power']} kW");
           }
 
-          parsed['power_w'] = powerValue * 1000;
-          parsed['frequency'] = freqValue;
-          parsed['today_energy'] = todayEng;
-          parsed['month_energy'] = monthEng;
-
-          if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
-            (parsed['threePhase'] as Map)['power'] = powerValue;
+          // Phase 2 (B)
+          if (parsed.containsKey('phaseTwo') && parsed['phaseTwo'] is Map) {
+            final phase2 = parsed['phaseTwo'] as Map;
+            if (phase2.containsKey('power')) {
+              double powerValue = (phase2['power'] as num).toDouble();
+              if (powerValue > 100) {
+                powerValue = powerValue / 1000;
+                phase2['power'] = powerValue;
+              }
+            }
+            debugPrint("🟡 PHASE B - Power: ${phase2['power']} kW");
           }
+
+          // Phase 3 (C)
+          if (parsed.containsKey('phaseThree') && parsed['phaseThree'] is Map) {
+            final phase3 = parsed['phaseThree'] as Map;
+            if (phase3.containsKey('power')) {
+              double powerValue = (phase3['power'] as num).toDouble();
+              if (powerValue > 100) {
+                powerValue = powerValue / 1000;
+                phase3['power'] = powerValue;
+              }
+            }
+            debugPrint("🔵 PHASE C - Power: ${phase3['power']} kW");
+          }
+
+          // Also check for direct power_w (total power)
+          if (parsed.containsKey('power_w')) {
+            double totalPower = (parsed['power_w'] as num).toDouble();
+            if (totalPower > 100) {
+              totalPower = totalPower / 1000;
+              parsed['power_w'] = totalPower;
+            }
+            debugPrint("⚡ Total Power from power_w: ${totalPower}KW");
+          }
+
+          // Preserve frequency for backward compatibility
+          if (parsed.containsKey('frequency')) {
+            double freqValue = (parsed['frequency'] as num).toDouble();
+            debugPrint("📊 Top-level Frequency: ${freqValue}Hz");
+          }
+
+          parsed['deviceId'] = _selectedDeviceId;
         }
 
-        parsed['deviceId'] ??= parsed['deviceId'] ?? _selectedDeviceId;
+        debugPrint("✅ FINAL realtimeData => $parsed");
+
+        if (!mounted) return;
+
+        setState(() {
+          realtimeData = Map.from(parsed);
+        });
+
+        // Force refresh for EnergyStatsGrid
+        setState(() {
+          _refreshTrigger++;
+        });
 
       } catch (e) {
         debugPrint("❌ Parse error: $e");
       }
-
-      if (!mounted) return;
-
-      setState(() {
-        realtimeData = Map.from(parsed);
-      });
-
-      debugPrint("✅ FINAL realtimeData => $realtimeData");
     });
+
+    // Request initial realtime data after setting up listener
+    if (socketService.socket?.connected ?? false) {
+      Future.delayed(Duration(milliseconds: 500), () {
+        socketService.socket?.emit("get-realtime", {"deviceId": _selectedDeviceId});
+      });
+    }
   }
 
   void _joinDeviceRoom(String deviceId) {
@@ -435,11 +592,32 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() => isLoading = false);
     }
   }
+
+
+  void _refreshAfterConfig() {
+    debugPrint("🔄 Config updated → refreshing bill & UI");
+
+    if (_selectedDeviceId != null && _selectedDeviceId!.isNotEmpty) {
+
+
+      setState(() {
+        realtimeData = {...?realtimeData};
+        _refreshTrigger++;
+      });
+
+
+      socketService.socket?.emit("get-realtime", {
+        "deviceId": _selectedDeviceId
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      endDrawer: const ProfileDrawer(),
+      endDrawer:  ProfileDrawer(
+        onConfigUpdated: _refreshAfterConfig,
+      ),
       backgroundColor:  Color(0xFF121821),
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -608,12 +786,16 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(height: 17),
 
 
-               PhaseEnergyWidget(realtimeData: realtimeData,),
+               PhaseEnergyWidget(realtimeData: realtimeData,
+                 key: ValueKey(_selectedDeviceId),),
 
 
                SizedBox(height: 12,),
 
-              EnergyStatsGrid(realtimeData: realtimeData?? {},),
+              EnergyStatsGrid(realtimeData: realtimeData?? {},
+                deviceId: _selectedDeviceId,
+                refreshTrigger: _refreshTrigger,
+              ),
 
 
 

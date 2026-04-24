@@ -199,12 +199,14 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
       );
 
       await BillingService.updateBilling(_billingId!, request);
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Updated successfully")),
       );
 
       await Future.delayed(const Duration(milliseconds: 300));
+      if (!mounted) return;
 
       Navigator.pop(context, true);
 
@@ -311,7 +313,7 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
                   Row(children: [
                     Expanded(
                       child: _buildTextField(
-                        label: 'Reading Days',
+                        label: 'Reading Date',
                         controller: _readingDateCtrl,
                         hint: 'e.g. 15',
                         keyboard: TextInputType.number,
@@ -325,11 +327,16 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(child: _buildTextField(
-                      label: 'Max Load',
+                      label: 'Max Load (kw)',
                       controller: _maxLoadCtrl,
                       hint: 'e.g. 500',
                       keyboard: TextInputType.number,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        final d = int.tryParse(v);
+                        if (d == null || d < 0 || d > 60) return 'Enter 0–60';
+                        return null;
+                      },
                     )),
                   ]),
                   const SizedBox(height: 22),
@@ -344,7 +351,12 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
                     controller: _taxCtrl,
                     hint: 'e.g. 17',
                     keyboard: const TextInputType.numberWithOptions(decimal: true),
-                    validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Required';
+                      final d = int.tryParse(v);
+                      if (d == null || d < 1 || d > 200) return 'Enter 1–200';
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 26),
 

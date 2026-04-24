@@ -101,6 +101,7 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
 
       final data = response['data'];
 
+
       final List threePhaseData = data['threePhaseData'] ?? [];
       if (threePhaseData.isNotEmpty) {
         final latestData = threePhaseData.last;

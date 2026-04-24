@@ -27,8 +27,8 @@ class BillingData {
   final String organizationId;
   final int readingDate;
   final List<UnitPriceSlabResponse> unitPriceSlabs;
-  final double? maxLoad;
-  final double? taxPercentage;
+  final int maxLoad;
+  final int taxPercentage;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -53,8 +53,8 @@ class BillingData {
       unitPriceSlabs: (json['unitPriceSlabs'] as List)
           .map((slab) => UnitPriceSlabResponse.fromJson(slab))
           .toList(),
-      maxLoad: (json['maxLoad'] as num?)?.toDouble(),
-      taxPercentage: (json['taxPercentage'] as num).toDouble(),
+      maxLoad: json['maxLoad'],
+      taxPercentage: json['taxPercentage'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
     );

@@ -11,7 +11,8 @@ import 'edit_profile.dart';
 
 
 class ProfileDrawer extends StatefulWidget {
-  const ProfileDrawer({super.key});
+  final VoidCallback? onConfigUpdated;
+  const ProfileDrawer({super.key, this.onConfigUpdated});
 
   @override
   State<ProfileDrawer> createState() => _ProfileDrawerState();
@@ -41,31 +42,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
     }
   }
 
-  // Future<Map<String, dynamic>> _getDeviceData() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //
-  //
-  //   final deviceId = _selectedDeviceId ?? prefs.getString('device_id') ?? '';
-  //
-  //
-  //   final deviceType  = prefs.getString('device_type_$deviceId')  ?? prefs.getString('device_type')  ?? '';
-  //   final readingDate = prefs.getString('reading_date_$deviceId') ?? prefs.getString('reading_date') ?? '';
-  //   final maxLoad     = prefs.getString('max_load_$deviceId')     ?? prefs.getString('max_load')     ?? '';
-  //   final tax         = prefs.getString('tax_$deviceId')          ?? prefs.getString('tax')          ?? '';
-  //
-  //   final slabsJson = prefs.getString('unit_slabs_$deviceId') ?? prefs.getString('unit_slabs') ?? '[]';
-  //   List<dynamic> unitSlabs = [];
-  //   try { unitSlabs = jsonDecode(slabsJson); } catch (_) {}
-  //
-  //   return {
-  //     "deviceType"  : deviceType,
-  //     "deviceId"    : deviceId,
-  //     "readingDate" : readingDate,
-  //     "maxLoad"     : maxLoad,
-  //     "tax"         : tax,
-  //     "unitSlabs"   : unitSlabs,
-  //   };
-  // }
+
 
 
 
@@ -168,28 +145,30 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   );
                 },
               ),
-              _item(context, Icons.add, "Add Device", () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>  DeviceReadingForm(showBackButton: true,),
-                  ),
-                );
-              }),
+              // _item(context, Icons.add, "Add Device", () {
+              //   Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) =>  DeviceReadingForm(showBackButton: true,),
+              //     ),
+              //   );
+              // }),
               _item(context, Icons.settings_input_component, "Device Configuration", () async {
 
 
-                // Map<String, dynamic> deviceData = await _getDeviceData();
 
-                Navigator.push(
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => DeviceConfigForm(
                       showBackButton: true,
-                      // selectedDeviceId: _selectedDeviceId,
                     ),
                   ),
                 );
+
+                if (result == true) {
+                  widget.onConfigUpdated?.call();
+                }
               }),
               _item(context, Icons.report_problem_outlined, "Report a problem", () {
                 // Navigate to Report Screen

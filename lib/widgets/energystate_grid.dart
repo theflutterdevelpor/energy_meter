@@ -1,58 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'dart:async';
 import '../services/device_service.dart';
 
 class EnergyStatsGrid extends StatefulWidget {
   final Map<String, dynamic>? realtimeData;
+  final String? deviceId;
+  final int refreshTrigger;
 
-  const EnergyStatsGrid({super.key, this.realtimeData});
+  const EnergyStatsGrid({super.key, this.realtimeData, this.deviceId, required this.refreshTrigger});
 
   @override
   State<EnergyStatsGrid> createState() => _EnergyStatsGridState();
 }
 
 class _EnergyStatsGridState extends State<EnergyStatsGrid> {
+  double? load;
   double? monthlyCost;
   bool isLoading = false;
   String? _currentDeviceId;
+  Timer? _timer;
 
 
 
 
 
   Future<void> fetchBill(String deviceId) async {
+    if (deviceId.isEmpty) return;
 
-    if (deviceId.isEmpty) {
-      print("❌ No device ID provided");
-      return;
-    }
+    if (_currentDeviceId == deviceId && monthlyCost != null) return;
+
+    print("⏳ Fetching bill for device: $deviceId");
+
+    if (!mounted) return;
+
     setState(() {
-      isLoading = true;
+      isLoading = _currentDeviceId != deviceId;
     });
 
     try {
       final billResponse = await DeviceService.calculateBill(deviceId);
 
-      print("🆔 Device ID: $deviceId");
-      print("✅ Bill fetched successfully!");
-      print("📊 Total Units: ${billResponse.data.totalUnits}");
-      print("💰 Base Cost: Rs ${billResponse.data.baseCost}");
-      print("🧾 Tax Percentage: ${billResponse.data.taxPercentage}%");
-      print("💸 Tax Amount: Rs ${billResponse.data.taxAmount}");
-      print("💵 Total Cost: Rs ${billResponse.data.totalCost}");
+      final bill = billResponse.data;
+      print("📊 Total Units: ${bill.totalUnits}");
+      print("💰 Base Cost: Rs ${bill.baseCost}");
+      print("🧾 Tax Percentage: ${bill.taxPercentage}%");
+      print("💸 Tax Amount: Rs ${bill.taxAmount}");
+      print("💵 Total Cost: Rs ${bill.totalCost}");
+      print("⚡ Load: ${bill.load}%");
 
-
-
-      monthlyCost = billResponse.data.totalCost;
-
-
+      if (!mounted) return;
       setState(() {
+        monthlyCost = bill.totalCost;
+        load = bill.load;
+        _currentDeviceId = deviceId;
         isLoading = false;
       });
+      print("🖥️ UI UPDATED => Cost: $monthlyCost | Load: $load");
 
     } catch (e) {
+
       print("❌ Error: $e");
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
@@ -63,38 +72,58 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
   @override
   void initState() {
     super.initState();
-    // ✅ Initial load agar deviceId available ho
-    if (widget.realtimeData != null && widget.realtimeData!.containsKey('deviceId')) {
-      final deviceId = widget.realtimeData!['deviceId'].toString();
-      if (deviceId.isNotEmpty) {
-        fetchBill(deviceId);
-      }
+    if (widget.deviceId != null && widget.deviceId!.isNotEmpty) {
+      fetchBill(widget.deviceId!);
+      _timer?.cancel();
+
+      _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+        print("🔄 AUTO REFRESH TRIGGERED at ${DateTime.now()}");
+        if (widget.deviceId != null && widget.deviceId!.isNotEmpty) {
+          fetchBill(widget.deviceId!);
+        }
+      });
     }
   }
 
   @override
   void didUpdateWidget(covariant EnergyStatsGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final newDeviceId = widget.realtimeData != null
-        ? widget.realtimeData!['deviceId']?.toString()
-        : null;
 
-    final oldDeviceId = oldWidget.realtimeData != null
-        ? oldWidget.realtimeData!['deviceId']?.toString()
-        : null;
+    final newId = widget.deviceId;
+    final oldId = oldWidget.deviceId;
 
-    print("🔄 didUpdateWidget - Old Device: $oldDeviceId, New Device: $newDeviceId");
+    final deviceChanged = newId != oldId;
+    final refreshChanged = widget.refreshTrigger != oldWidget.refreshTrigger;
 
-    if (newDeviceId != null &&
-        newDeviceId.isNotEmpty &&
-        newDeviceId != oldDeviceId &&
-        newDeviceId != _currentDeviceId) {
-      print("📡 Device changed, fetching new bill...");
-      fetchBill(newDeviceId);
+    if (newId == null || newId.isEmpty) {
+      _timer?.cancel();
+      return;
     }
+
+    if (deviceChanged) {
+      _timer?.cancel();
+      _currentDeviceId = null;
+      fetchBill(newId);
+      return;
+    }
+
+    if (refreshChanged) {
+      _currentDeviceId = null;
+      fetchBill(newId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
   @override
   Widget build(BuildContext context) {
+    final double? currentLoad =
+    (widget.realtimeData != null && widget.realtimeData!.containsKey('load'))
+        ? (widget.realtimeData!['load'] as num).toDouble()
+        : load;
     return Column(
       children: [
         Row(
@@ -102,8 +131,8 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
             Expanded(
               child: _statCard(
                 title: "Load",
-                value: _formatLoad(widget.realtimeData?['load']),
-                valueColor: _loadColor(widget.realtimeData?['load']),
+                value: _formatLoad(currentLoad),
+                valueColor: _loadColor(currentLoad),
                 icon: Icons.bolt,
               ),
             ),
@@ -149,7 +178,7 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // icon + title (start)
+
           Row(
             children: [
               Icon(

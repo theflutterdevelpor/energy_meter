@@ -10,11 +10,21 @@ class DeviceCostResponse {
   });
 
   factory DeviceCostResponse.fromJson(Map<String, dynamic> json) {
-    return DeviceCostResponse(
-      success: json['success'] ?? false,
-      code: json['code'] ?? 0,
-      data: DeviceCostData.fromJson(json['data'] ?? {}),
-    );
+    final data = json['data'];
+
+    if (data is List) {
+      return DeviceCostResponse(
+        success: json['success'] ?? false,
+        code: json['code'] ?? 0,
+        data: DeviceCostData.fromJson(data.first),
+      );
+    } else {
+      return DeviceCostResponse(
+        success: json['success'] ?? false,
+        code: json['code'] ?? 0,
+        data: DeviceCostData.fromJson(data),
+      );
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -28,11 +38,12 @@ class DeviceCostResponse {
 
 class DeviceCostData {
   final String deviceId;
-  final int totalUnits;
+  final double totalUnits;
   final double baseCost;
   final double taxPercentage;
   final double taxAmount;
   final double totalCost;
+  final double? load;
 
   DeviceCostData({
     required this.deviceId,
@@ -41,16 +52,18 @@ class DeviceCostData {
     required this.taxPercentage,
     required this.taxAmount,
     required this.totalCost,
+    required this.load,
   });
 
   factory DeviceCostData.fromJson(Map<String, dynamic> json) {
     return DeviceCostData(
       deviceId: json['deviceId'] ?? '',
-      totalUnits: json['totalUnits'] ?? 0,
+      totalUnits: (json['totalUnits'] ?? 0).toDouble(),
       baseCost: (json['baseCost'] ?? 0).toDouble(),
       taxPercentage: (json['taxPercentage'] ?? 0).toDouble(),
       taxAmount: (json['taxAmount'] ?? 0).toDouble(),
       totalCost: (json['totalCost'] ?? 0).toDouble(),
+      load: (json['load'] ?? 0).toDouble(),
     );
   }
 
@@ -62,6 +75,7 @@ class DeviceCostData {
       'taxPercentage': taxPercentage,
       'taxAmount': taxAmount,
       'totalCost': totalCost,
+      'load': load,
     };
   }
 }

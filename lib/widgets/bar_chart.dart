@@ -1,439 +1,3 @@
-//
-// import 'package:flutter/material.dart';
-// import 'package:syncfusion_flutter_charts/charts.dart';
-//
-// import '../services/energy_services.dart';
-//
-// class barchart extends StatefulWidget {
-//   const barchart({Key? key}) : super(key: key);
-//
-//   @override
-//   State<barchart> createState() => _BarChartState();
-// }
-//
-// class _BarChartState extends State<barchart> {
-//   List<ChartData> data = [];
-//   bool isLoading = false;
-//   late TooltipBehavior _tooltip;
-//   final List<String> filterOptions = [
-//     "Today",
-//     "Yesterday",
-//     "Week",
-//     "30 Days",
-//     "6 Months",
-//   ];
-//
-//   String selectedValue = "Today";
-//
-//   String dateFormat(DateTime date) =>
-//       "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-//
-//   Map<String, String> getDateRange(String dateFilter) {
-//     DateTime today = DateTime.now();
-//     DateTime now = DateTime(today.year, today.month, today.day);
-//
-//     DateTime fromDate, toDate;
-//
-//     switch (dateFilter) {
-//       case 'Today':
-//         fromDate = now;
-//         toDate = now;
-//         break;
-//
-//       case 'Yesterday':
-//         fromDate = now.subtract(Duration(days: 1));
-//         toDate = now.subtract(Duration(days: 1));
-//         break;
-//
-//       case 'Week':
-//         fromDate = now.subtract(Duration(days: 6));
-//         toDate = now;
-//         break;
-//
-//       case '30 Days':
-//         fromDate = now.subtract(Duration(days: 29));
-//         toDate = now;
-//         break;
-//       case '6 Months':
-//         fromDate = DateTime(
-//           now.year,
-//           now.month - 6,
-//           now.day,
-//         );
-//         toDate = now;
-//         break;
-//
-//       default:
-//         fromDate = now;
-//         toDate = now;
-//     }
-//
-//     return {
-//       'fromDate': dateFormat(fromDate),
-//       'toDate': dateFormat(toDate),
-//     };
-//   }
-//
-//   Future<void> loadEnergyData() async {
-//     setState(() => isLoading = true);
-//
-//     final dates = getDateRange(selectedValue);
-//
-//     try {
-//       Map<String, dynamic> response;
-//
-//
-//       if (selectedValue == 'Today' || selectedValue == 'Yesterday') {
-//         response = await EnergyService.fetchEnergyHourly(
-//           date: dates['fromDate']!,
-//         );
-//       } else {
-//         response = await EnergyService.fetchEnergy(
-//           fromDate: dates['fromDate']!,
-//           toDate: dates['toDate']!,
-//         );
-//       }
-//
-//       final apiData = response['data'];
-//       debugPrint(" API CALL STARTED");
-//       debugPrint("Filter: $selectedValue");
-//
-//
-//       final phase1List = (apiData['phaseOneData'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-//       final phase2List = (apiData['phaseTwoData'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-//       final phase3List = (apiData['phaseThreeData'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-//       final threePhaseList = (apiData['threePhaseData'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-//
-//
-//       bool isHourly = phase1List.isNotEmpty && phase1List[0].containsKey('hour');
-//
-//       debugPrint("Is Hourly: $isHourly");
-//       debugPrint("Phase 1 length: ${phase1List.length}");
-//
-//
-//       final maxLength = [phase1List.length, phase2List.length, phase3List.length, threePhaseList.length]
-//           .reduce((a, b) => a > b ? a : b);
-//
-//
-//       List<ChartData> chartData = [];
-//       for (int i = 0; i < maxLength; i++) {
-//         final phase1 = _getEnergyFromList(phase1List, i, isHourly);
-//         final phase2 = _getEnergyFromList(phase2List, i, isHourly);
-//         final phase3 = _getEnergyFromList(phase3List, i, isHourly);
-//         final threePhase = _getEnergyFromList(threePhaseList, i, isHourly);
-//
-//         String label = "Day ${i + 1}";
-//
-//         if (isHourly) {
-//
-//           if (i < phase1List.length) {
-//             final hour = phase1List[i]['hour'] ?? i;
-//             label = "$hour-${(hour + 1) % 24}";
-//           }
-//         } else {
-//
-//           if (i < phase1List.length) {
-//             final dateStr = phase1List[i]['date']?.toString().split('T')[0] ?? "Day ${i + 1}";
-//
-//             final parts = dateStr.split('-');
-//             if (parts.length == 3) {
-//               final month = _getMonthAbbr(int.parse(parts[1]));
-//               label = "$month-${parts[2]}";
-//             } else {
-//               label = dateStr;
-//             }
-//           }
-//         }
-//
-//         chartData.add(ChartData(label, phase1, phase2, phase3, threePhase));
-//       }
-//
-//       data = chartData;
-//       debugPrint("✅ Chart data loaded: ${data.length} entries");
-//     } catch (e) {
-//       debugPrint('❌ API ERROR: $e');
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Error: $e')),
-//       );
-//     }
-//
-//     setState(() => isLoading = false);
-//   }
-//
-//
-//   double _getEnergyFromList(List<Map<String, dynamic>> list, int index, bool isHourly) {
-//     try {
-//       if (index < list.length) {
-//         final energy = isHourly
-//             ? list[index]['sumOfEnergyPerHour']  // Hourly
-//             : list[index]['dailySumOfEnergy'];    // Daily
-//         return (energy ?? 0).toDouble();
-//       }
-//       return 0.0;
-//     } catch (e) {
-//       debugPrint('Error extracting energy at index $index: $e');
-//       return 0.0;
-//     }
-//   }
-//
-//   // ✅ Month abbreviation helper
-//   String _getMonthAbbr(int month) {
-//     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-//     return months[month - 1];
-//   }
-//
-//   @override
-//   void initState() {
-//     _tooltip = TooltipBehavior(enable: true);
-//     loadEnergyData();
-//     super.initState();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final screenWidth = MediaQuery.of(context).size.width;
-//     final screenHeight = MediaQuery.of(context).size.height;
-//
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       body: Center(
-//         child: SizedBox(
-//           width: screenWidth * 0.95,
-//           height: screenHeight * 0.55,
-//           child: Card(
-//             color: Colors.white,
-//             elevation: 6,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(20),
-//             ),
-//             child: Padding(
-//               padding: const EdgeInsets.all(20),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   ///  TITLE + DROPDOWN
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       Row(
-//                         children: const [
-//                           Icon(Icons.bolt, color: Colors.green),
-//                           SizedBox(width: 6),
-//                           Text(
-//                             "Energy",
-//                             style: TextStyle(
-//                               fontSize: 18,
-//                               fontWeight: FontWeight.bold,
-//                             ),
-//                           ),
-//                           SizedBox(width: 6),
-//                           Text(
-//                             "(KWh)",
-//                             style: TextStyle(
-//                               fontSize: 18,
-//                               fontWeight: FontWeight.bold,
-//                               color: Colors.grey,
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//
-//                       /// DROPDOWN
-//                       Container(
-//                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-//                         decoration: BoxDecoration(
-//                           border: Border.all(color: Colors.black12),
-//                           borderRadius: BorderRadius.circular(10),
-//                           color: Colors.white,
-//                         ),
-//                         child: PopupMenuButton<String>(
-//                           child: Row(
-//                             mainAxisSize: MainAxisSize.min,
-//                             children: [
-//                               Text(
-//                                 selectedValue,
-//                                 style: const TextStyle(
-//                                   fontSize: 13,
-//                                   fontWeight: FontWeight.w500,
-//                                 ),
-//                               ),
-//                               const Icon(Icons.keyboard_arrow_down, size: 20),
-//                             ],
-//                           ),
-//                           onSelected: (String value) {
-//                             setState(() {
-//                               selectedValue = value;
-//                             });
-//                             loadEnergyData();
-//                           },
-//                           itemBuilder: (BuildContext context) {
-//                             return filterOptions.map((String choice) {
-//                               return PopupMenuItem<String>(
-//                                 value: choice,
-//                                 child: Text(
-//                                   choice,
-//                                   style: const TextStyle(
-//                                     fontSize: 13,
-//                                     fontWeight: FontWeight.w500,
-//                                   ),
-//                                 ),
-//                               );
-//                             }).toList();
-//                           },
-//                           padding: EdgeInsets.zero,
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//
-//                   const SizedBox(height: 20),
-//
-//
-//                   Expanded(
-//                     child: isLoading
-//                         ? const Center(child: CircularProgressIndicator())
-//                         : data.isEmpty
-//                         ? const Center(child: Text("No data available"))
-//                         : Stack(
-//                       children: [
-//                         // Fixed Y-Axis background
-//                         Positioned(
-//                           left: 0,
-//                           top: 0,
-//                           bottom: 0,
-//                           width: 50,
-//                           child: Container(
-//                             color: Colors.white,
-//                             child: Column(
-//                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                               children: List.generate(
-//                                 6,
-//                                     (index) {
-//                                   final isHourly = selectedValue == 'Today' || selectedValue == 'Yesterday';
-//                                   final maxValue = isHourly ? 25 : 250;
-//                                   final interval = isHourly ? 5 : 50;
-//                                   final value = maxValue - (index * interval);
-//                                   return Padding(
-//                                     padding: const EdgeInsets.only(right: 8.0),
-//                                     child: Text(
-//                                       value.toStringAsFixed(0),
-//                                       style: const TextStyle(
-//                                         fontSize: 11,
-//                                         color: Colors.black,
-//                                       ),
-//                                     ),
-//                                   );
-//                                 },
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                         // Scrollable chart with transparent Y-axis
-//                         Padding(
-//                           padding: const EdgeInsets.only(left: 10),
-//                           child: SingleChildScrollView(
-//                             scrollDirection: Axis.horizontal,
-//                             child: SizedBox(
-//                               width: data.length * 50.0,
-//                               child: SfCartesianChart(
-//                                 tooltipBehavior: _tooltip,
-//                                 primaryXAxis: CategoryAxis(
-//                                   labelRotation: -45,
-//                                 ),
-//                                 primaryYAxis: NumericAxis(
-//                                   minimum: 0,
-//                                   maximum: selectedValue == 'Today' || selectedValue == 'Yesterday' ? 25 : 250,
-//                                   interval: selectedValue == 'Today' || selectedValue == 'Yesterday' ? 5 : 50,
-//                                   majorGridLines: const MajorGridLines(
-//                                     dashArray: [5, 5],
-//                                     color: Colors.grey,
-//                                   ),
-//                                   axisLine: const AxisLine(width: 0),
-//                                   labelStyle: const TextStyle(
-//                                     color: Colors.transparent,
-//                                   ),
-//                                 ),
-//                                 series: <CartesianSeries>[
-//                                   _barSeries(Colors.teal, (d) => d.phase1, "Phase 1"),
-//                                   _barSeries(Color(0xFF4169E1), (d) => d.phase2, "Phase 2"),
-//                                   _barSeries(Colors.green, (d) => d.phase3, "Phase 3"),
-//                                   _barSeries(Color(0xFFff8c42), (d) => d.phase4, "Three Phase"),
-//                                 ],
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//
-//                   const SizedBox(height: 12),
-//
-//                   ///  FIXED LEGEND
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                     children: const [
-//                       _LegendDot("Phase 1", Colors.teal),
-//                       _LegendDot("Phase 2", Color(0xFF4169E1)),
-//                       _LegendDot("Phase 3", Colors.green),
-//                       _LegendDot("Three Phase", Color(0xFFff8c42)),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//
-//   ColumnSeries<ChartData, String> _barSeries(
-//       Color color,
-//       double Function(ChartData) mapper,
-//       String name,
-//       ) {
-//     return ColumnSeries<ChartData, String>(
-//       dataSource: data,
-//       xValueMapper: (d, _) => d.month,
-//       yValueMapper: (d, _) => mapper(d),
-//       name: name,
-//       color: color,
-//       borderRadius: BorderRadius.circular(4),
-//     );
-//   }
-// }
-//
-// ///  LEGEND DOT
-// class _LegendDot extends StatelessWidget {
-//   final String text;
-//   final Color color;
-//
-//   const _LegendDot(this.text, this.color);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       children: [
-//         CircleAvatar(radius: 5, backgroundColor: color),
-//         const SizedBox(width: 6),
-//         Text(text, style: const TextStyle(fontSize: 12)),
-//       ],
-//     );
-//   }
-// }
-//
-//
-// class ChartData {
-//   ChartData(this.month, this.phase1, this.phase2, this.phase3, this.phase4);
-//
-//   final String month;
-//   final double phase1;
-//   final double phase2;
-//   final double phase3;
-//   final double phase4;
-// }
-
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
@@ -475,6 +39,9 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       'voltage': 0.0,
       'current': 0.0,
       'power': 0.0,
+      'reactivePower': 0.0,
+      'apparentPower': 0.0,
+      'frequency': 0.0,
       'pf': 0.0,
       'color': Colors.green,
     },
@@ -482,6 +49,9 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       'voltage': 0.0,
       'current': 0.0,
       'power': 0.0,
+      'reactivePower': 0.0,
+      'apparentPower': 0.0,
+      'frequency': 0.0,
       'pf': 0.0,
       'color': Color(0xFFFFB74D),
     },
@@ -489,6 +59,9 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       'voltage': 0.0,
       'current': 0.0,
       'power': 0.0,
+      'reactivePower': 0.0,
+      'apparentPower': 0.0,
+      'frequency': 0.0,
       'pf': 0.0,
       'color': Colors.red,
     },
@@ -496,6 +69,9 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       'voltage': 0.0,
       'current': 0.0,
       'power': 0.0,
+      'reactivePower': 0.0,
+      'apparentPower': 0.0,
+      'frequency': 0.0,
       'pf': 0.0,
       'color': Color(0xFF00BCD4),
     },
@@ -525,6 +101,7 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
   void didUpdateWidget(covariant PhaseEnergyWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // Check if realtime data has changed
     if (widget.realtimeData != null &&
         widget.realtimeData != oldWidget.realtimeData) {
 
@@ -534,49 +111,76 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       final data = widget.realtimeData!;
 
       setState(() {
+        // ========== PHASE 1 (A) ==========
+        if (data.containsKey('phaseOne') && data['phaseOne'] is Map) {
+          final phase1 = data['phaseOne'] as Map;
+          phaseCardsData['phaseOne']!['voltage'] = _getDoubleValue(phase1['voltage'], 0.0);
+          phaseCardsData['phaseOne']!['current'] = _getDoubleValue(phase1['current'], 0.0);
+          phaseCardsData['phaseOne']!['power'] = _getDoubleValue(phase1['power'], 0.0);
+          phaseCardsData['phaseOne']!['reactivePower'] = _getDoubleValue(phase1['reactivePower'], 0.0);
+          phaseCardsData['phaseOne']!['apparentPower'] = _getDoubleValue(phase1['apparentPower'], 0.0);
+          phaseCardsData['phaseOne']!['frequency'] = _getDoubleValue(phase1['frequency'], 0.0);
+          phaseCardsData['phaseOne']!['pf'] = _getDoubleValue(phase1['powerFactor'], 0.0);
+        }
 
-        phaseCardsData['phaseOne']!['voltage'] =
-            _toDouble(data['v1'], phaseCardsData['phaseOne']!['voltage']);
+        // ========== PHASE 2 (B) ==========
+        if (data.containsKey('phaseTwo') && data['phaseTwo'] is Map) {
+          final phase2 = data['phaseTwo'] as Map;
+          phaseCardsData['phaseTwo']!['voltage'] = _getDoubleValue(phase2['voltage'], 0.0);
+          phaseCardsData['phaseTwo']!['current'] = _getDoubleValue(phase2['current'], 0.0);
+          phaseCardsData['phaseTwo']!['power'] = _getDoubleValue(phase2['power'], 0.0);
+          phaseCardsData['phaseTwo']!['reactivePower'] = _getDoubleValue(phase2['reactivePower'], 0.0);
+          phaseCardsData['phaseTwo']!['apparentPower'] = _getDoubleValue(phase2['apparentPower'], 0.0);
+          phaseCardsData['phaseTwo']!['frequency'] = _getDoubleValue(phase2['frequency'], 0.0);
+          phaseCardsData['phaseTwo']!['pf'] = _getDoubleValue(phase2['powerFactor'], 0.0);
+        }
 
-        phaseCardsData['phaseTwo']!['voltage'] =
-            _toDouble(data['v2'], phaseCardsData['phaseTwo']!['voltage']);
+        // ========== PHASE 3 (C) ==========
+        if (data.containsKey('phaseThree') && data['phaseThree'] is Map) {
+          final phase3 = data['phaseThree'] as Map;
+          phaseCardsData['phaseThree']!['voltage'] = _getDoubleValue(phase3['voltage'], 0.0);
+          phaseCardsData['phaseThree']!['current'] = _getDoubleValue(phase3['current'], 0.0);
+          phaseCardsData['phaseThree']!['power'] = _getDoubleValue(phase3['power'], 0.0);
+          phaseCardsData['phaseThree']!['reactivePower'] = _getDoubleValue(phase3['reactivePower'], 0.0);
+          phaseCardsData['phaseThree']!['apparentPower'] = _getDoubleValue(phase3['apparentPower'], 0.0);
+          phaseCardsData['phaseThree']!['frequency'] = _getDoubleValue(phase3['frequency'], 0.0);
+          phaseCardsData['phaseThree']!['pf'] = _getDoubleValue(phase3['powerFactor'], 0.0);
+        }
 
-        phaseCardsData['phaseThree']!['voltage'] =
-            _toDouble(data['v3'], phaseCardsData['phaseThree']!['voltage']);
-
-        phaseCardsData['phaseOne']!['current'] =
-            _toDouble(data['i1'], phaseCardsData['phaseOne']!['current']);
-
-        phaseCardsData['phaseTwo']!['current'] =
-            _toDouble(data['i2'], phaseCardsData['phaseTwo']!['current']);
-
-        phaseCardsData['phaseThree']!['current'] =
-            _toDouble(data['i3'], phaseCardsData['phaseThree']!['current']);
-
+        // ========== THREE PHASE ==========
+        if (data.containsKey('threePhase') && data['threePhase'] is Map) {
+          final threePhase = data['threePhase'] as Map;
+          phaseCardsData['threePhase']!['voltage'] = _getDoubleValue(threePhase['voltage'], 0.0);
+          phaseCardsData['threePhase']!['current'] = _getDoubleValue(threePhase['current'], 0.0);
+          phaseCardsData['threePhase']!['power'] = _getDoubleValue(threePhase['power'], 0.0);
+          phaseCardsData['threePhase']!['reactivePower'] = _getDoubleValue(threePhase['reactivePower'], 0.0);
+          phaseCardsData['threePhase']!['apparentPower'] = _getDoubleValue(threePhase['apparentPower'], 0.0);
+          phaseCardsData['threePhase']!['frequency'] = _getDoubleValue(threePhase['frequency'], 0.0);
+          phaseCardsData['threePhase']!['pf'] = _getDoubleValue(threePhase['powerFactor'], 0.0);
+        }
       });
 
-      debugPrint("🔌 V1 => ${phaseCardsData['phaseOne']!['voltage']}");
-      debugPrint("🔌 V2 => ${phaseCardsData['phaseTwo']!['voltage']}");
-      debugPrint("🔌 V3 => ${phaseCardsData['phaseThree']!['voltage']}");
-
-      debugPrint("⚡ I1 => ${phaseCardsData['phaseOne']!['current']}");
-      debugPrint("⚡ I2 => ${phaseCardsData['phaseTwo']!['current']}");
-      debugPrint("⚡ I3 => ${phaseCardsData['phaseThree']!['current']}");
-
+      // Debug prints to verify realtime values
+      debugPrint("🔴 REALTIME PHASE A - P: ${phaseCardsData['phaseOne']!['power']} kW");
+      debugPrint("🟡 REALTIME PHASE B - P: ${phaseCardsData['phaseTwo']!['power']} kW");
+      debugPrint("🔵 REALTIME PHASE C - P: ${phaseCardsData['phaseThree']!['power']} kW");
+      debugPrint("⚡ REALTIME THREE PHASE - P: ${phaseCardsData['threePhase']!['power']} kW");
     }
   }
 
 
 
-  double _toDouble(dynamic value, double defaultValue) {
+  double _getDoubleValue(dynamic value, double defaultValue) {
     if (value == null) return defaultValue;
-
     if (value is int) return value.toDouble();
-
     if (value is double) return value;
-
-    if (value is String) return double.tryParse(value) ?? defaultValue;
-
+    if (value is String) {
+      try {
+        return double.parse(value);
+      } catch (e) {
+        return defaultValue;
+      }
+    }
     return defaultValue;
   }
 
@@ -607,29 +211,60 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
         phaseCardsData['phaseOne']!['voltage'] = p1['avgVoltage'] ?? 0.0;
         phaseCardsData['phaseOne']!['current'] = p1['avgCurrent'] ?? 0.0;
         phaseCardsData['phaseOne']!['power']   = p1['avgPower'] ?? 0.0;
+        phaseCardsData['phaseOne']!['reactivePower'] = p1['avgReactivePower'] ?? 0.0;
+        phaseCardsData['phaseOne']!['apparentPower'] = p1['avgApparentPower'] ?? 0.0;
+        phaseCardsData['phaseOne']!['frequency']     = p1['avgFrequency'] ?? 0.0;
         phaseCardsData['phaseOne']!['pf']      = p1['avgPowerFactor'] ?? 0.0;
 
         phaseCardsData['phaseTwo']!['voltage'] = p2['avgVoltage'] ?? 0.0;
         phaseCardsData['phaseTwo']!['current'] = p2['avgCurrent'] ?? 0.0;
         phaseCardsData['phaseTwo']!['power']   = p2['avgPower'] ?? 0.0;
+        phaseCardsData['phaseTwo']!['reactivePower'] = p2['avgReactivePower'] ?? 0.0;
+        phaseCardsData['phaseTwo']!['apparentPower'] = p2['avgApparentPower'] ?? 0.0;
+        phaseCardsData['phaseTwo']!['frequency']     = p2['avgFrequency'] ?? 0.0;
         phaseCardsData['phaseTwo']!['pf']      = p2['avgPowerFactor'] ?? 0.0;
 
         phaseCardsData['phaseThree']!['voltage'] = p3['avgVoltage'] ?? 0.0;
         phaseCardsData['phaseThree']!['current'] = p3['avgCurrent'] ?? 0.0;
         phaseCardsData['phaseThree']!['power']   = p3['avgPower'] ?? 0.0;
+        phaseCardsData['phaseThree']!['reactivePower'] = p3['avgReactivePower'] ?? 0.0;
+        phaseCardsData['phaseThree']!['apparentPower'] = p3['avgApparentPower'] ?? 0.0;
+        phaseCardsData['phaseThree']!['frequency']     = p3['avgFrequency'] ?? 0.0;
         phaseCardsData['phaseThree']!['pf']      = p3['avgPowerFactor'] ?? 0.0;
 
 
         phaseCardsData['threePhase']!['voltage'] = tp['avgVoltage'] ?? 0.0;
         phaseCardsData['threePhase']!['current'] = tp['avgCurrent'] ?? 0.0;
         phaseCardsData['threePhase']!['power']   = tp['avgPower'] ?? 0.0;
+        phaseCardsData['threePhase']!['reactivePower'] = tp['avgReactivePower'] ?? 0.0;
+        phaseCardsData['threePhase']!['apparentPower'] = tp['avgApparentPower'] ?? 0.0;
+        phaseCardsData['threePhase']!['frequency']     = tp['avgFrequency'] ?? 0.0;
         phaseCardsData['threePhase']!['pf']      = tp['avgPowerFactor'] ?? 0.0;
 
         print("✅ FINAL UI DATA:");
-        print("Voltage: ${phaseCardsData['threePhase']!['voltage']}");
-        print("Current: ${phaseCardsData['threePhase']!['current']}");
-        print("Power: ${phaseCardsData['threePhase']!['power']}");
-        print("PF: ${phaseCardsData['threePhase']!['pf']}");
+        print("---- PHASE 1 ----");
+        print("Voltage: ${phaseCardsData['phaseOne']!['voltage']}");
+        print("Current: ${phaseCardsData['phaseOne']!['current']}");
+        print("Power: ${phaseCardsData['phaseOne']!['power']}");
+        print("ApparentPower: ${phaseCardsData['phaseOne']!['apparentPower']}");
+        print("ReactivePower: ${phaseCardsData['phaseOne']!['reactivePower']}");
+        print("Frequency: ${phaseCardsData['phaseOne']!['frequency']}");
+        print("PF: ${phaseCardsData['phaseOne']!['pf']}");
+
+        print("---- PHASE 2 ----");
+        print("ApparentPower: ${phaseCardsData['phaseTwo']!['apparentPower']}");
+        print("ReactivePower: ${phaseCardsData['phaseTwo']!['reactivePower']}");
+        print("Frequency: ${phaseCardsData['phaseTwo']!['frequency']}");
+
+        print("---- PHASE 3 ----");
+        print("ApparentPower: ${phaseCardsData['phaseThree']!['apparentPower']}");
+        print("ReactivePower: ${phaseCardsData['phaseThree']!['reactivePower']}");
+        print("Frequency: ${phaseCardsData['phaseThree']!['frequency']}");
+
+        print("---- THREE PHASE ----");
+        print("ApparentPower: ${phaseCardsData['threePhase']!['apparentPower']}");
+        print("ReactivePower: ${phaseCardsData['threePhase']!['reactivePower']}");
+        print("Frequency: ${phaseCardsData['threePhase']!['frequency']}");
       });
     } catch (e) {
       debugPrint("Card API Error: $e");
@@ -701,6 +336,10 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       }
 
       final apiData = response['data'];
+      print("========= ENERGY DEBUG =========");
+      print("📊 thisMonthEnergyUsage: ${apiData['thisMonthEnergyUsage']}");
+      print("📊 totalEnergyConsumption: ${apiData['totalEnegyConsumption']}");
+      print("=================================");
 
       final phase1List = (apiData['phaseOneData'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       final phase2List = (apiData['phaseTwoData'] as List?)?.cast<Map<String, dynamic>>() ?? [];
@@ -904,7 +543,27 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
           _buildDataRow(
             'POWER',
             formatNumber(data['power']),
-            'W',
+            'kW',
+          ),
+          const SizedBox(height: 12),
+          _buildDataRow(
+            'APPARENT POWER',
+            formatNumber((data['apparentPower'] ?? 0).toDouble()),
+            'KVA',
+          ),
+
+          const SizedBox(height: 12),
+          _buildDataRow(
+            'REACTIVE POWER',
+            formatNumber(data['reactivePower']),
+            'KVAR',
+          ),
+
+          const SizedBox(height: 12),
+          _buildDataRow(
+            'FREQUENCY',
+            formatNumber(data['frequency']),
+            'Hz',
           ),
           const SizedBox(height: 12),
           _buildDataRow('PF', formatNumber(data['pf'] ?? 0), ''),
@@ -955,7 +614,29 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
           _buildDataRow(
             'POWER',
             formatNumber((data['power'] ?? 0).toDouble()),
-            'W',
+            'KW',
+          ),
+          const SizedBox(height: 12),
+          _buildDataRow(
+            'APPARENT POWER',
+            formatNumber((data['apparentPower'] ?? 0).toDouble()),
+            'KVA',
+          ),
+
+
+
+          const SizedBox(height: 12),
+          _buildDataRow(
+            'REACTIVE POWER',
+            formatNumber((data['reactivePower'] ?? 0).toDouble()),
+            'KVAR',
+          ),
+
+          const SizedBox(height: 12),
+          _buildDataRow(
+            'FREQUENCY',
+            formatNumber((data['frequency'] ?? 0).toDouble()),
+            'Hz',
           ),
           const SizedBox(height: 12),
           _buildDataRow('PF', formatNumber((data['pf'] ?? 0).toDouble()), ''),
