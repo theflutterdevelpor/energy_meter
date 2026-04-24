@@ -217,16 +217,16 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        // Debug info (remove in production)
-        if (_maxLoad != null && _currentPower != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              "${_currentPower?.toStringAsFixed(1)} kW / ${_maxLoad?.toStringAsFixed(0)} kW = ${load?.toStringAsFixed(1)}%",
-              style: const TextStyle(color: Colors.white38, fontSize: 9),
-            ),
-          ),
+        // const SizedBox(height: 12),
+        // // Debug info (remove in production)
+        // if (_maxLoad != null && _currentPower != null)
+        //   Padding(
+        //     padding: const EdgeInsets.only(top: 4),
+        //     child: Text(
+        //       "${_currentPower?.toStringAsFixed(1)} kW / ${_maxLoad?.toStringAsFixed(0)} kW = ${load?.toStringAsFixed(1)}%",
+        //       style: const TextStyle(color: Colors.white38, fontSize: 9),
+        //     ),
+        //   ),
       ],
     );
   }
