@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import '../services/device_service.dart';
+import '../services/billing_service.dart';
 
 class EnergyStatsGrid extends StatefulWidget {
   final Map<String, dynamic>? realtimeData;
   final String? deviceId;
   final int refreshTrigger;
 
-  const EnergyStatsGrid({super.key, this.realtimeData, this.deviceId, required this.refreshTrigger});
+  const EnergyStatsGrid({
+    super.key,
+    this.realtimeData,
+    this.deviceId,
+    required this.refreshTrigger
+  });
 
   @override
   State<EnergyStatsGrid> createState() => _EnergyStatsGridState();
@@ -20,47 +26,86 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
   bool isLoading = false;
   String? _currentDeviceId;
   Timer? _timer;
-
-
-
-
+  int? _maxLoad;
+  double? _currentPower;
 
   Future<void> fetchBill(String deviceId) async {
     if (deviceId.isEmpty) return;
-
-    if (_currentDeviceId == deviceId && monthlyCost != null) return;
 
     print("⏳ Fetching bill for device: $deviceId");
 
     if (!mounted) return;
 
     setState(() {
-      isLoading = _currentDeviceId != deviceId;
+      isLoading = true;
     });
 
     try {
-      final billResponse = await DeviceService.calculateBill(deviceId);
+      // 1. Get Max Load from Billing Config (database)
+      final allBillings = await BillingService.getAllBillings();
+      final billing = allBillings.firstWhere(
+            (b) => b.data.deviceId == deviceId,
+        orElse: () => throw Exception('No billing found for device $deviceId'),
+      );
 
+      _maxLoad = billing.data.maxLoad; // Direct value, no default
+      print("📋 Max Load from DB: $_maxLoad kW");
+
+      // 2. Get Current Power from realtime data (socket)
+      _currentPower = 0.0;
+      if (widget.realtimeData != null) {
+        // Check threePhase power
+        if (widget.realtimeData!.containsKey('threePhase') &&
+            widget.realtimeData!['threePhase'] is Map) {
+          final threePhase = widget.realtimeData!['threePhase'] as Map;
+          if (threePhase.containsKey('power')) {
+            _currentPower = (threePhase['power'] as num).toDouble();
+          }
+        }
+        // Check direct power field
+        else if (widget.realtimeData!.containsKey('power')) {
+          _currentPower = (widget.realtimeData!['power'] as num).toDouble();
+        }
+        // Check power_w field
+        else if (widget.realtimeData!.containsKey('power_w')) {
+          _currentPower = (widget.realtimeData!['power_w'] as num).toDouble();
+        }
+      }
+
+      print("⚡ Current Power (realtime): $_currentPower kW");
+
+      // 3. Calculate Load Manually (NOT from API)
+      double calculatedLoad = 0;
+      if (_maxLoad != null && _maxLoad! > 0 && _currentPower != null && _currentPower! > 0) {
+        calculatedLoad = (_currentPower! / _maxLoad!) * 100;
+        print("⚡ MANUAL LOAD CALCULATION: $calculatedLoad%");
+      } else {
+        print("⚠️ Cannot calculate load - MaxLoad: $_maxLoad, CurrentPower: $_currentPower");
+      }
+
+      // 4. Get Cost from API (only cost, not load)
+      final billResponse = await DeviceService.calculateBill(deviceId);
       final bill = billResponse.data;
-      print("📊 Total Units: ${bill.totalUnits}");
+
+      print("💰 API Cost: Rs ${bill.totalCost}");
       print("💰 Base Cost: Rs ${bill.baseCost}");
       print("🧾 Tax Percentage: ${bill.taxPercentage}%");
-      print("💸 Tax Amount: Rs ${bill.taxAmount}");
-      print("💵 Total Cost: Rs ${bill.totalCost}");
-      print("⚡ Load: ${bill.load}%");
+      print("📊 API Load (ignored): ${bill.load}%");
 
       if (!mounted) return;
+
       setState(() {
         monthlyCost = bill.totalCost;
-        load = bill.load;
+        // ✅ Use MANUALLY calculated load, NOT API load
+        load = calculatedLoad > 0 ? calculatedLoad : bill.load;
         _currentDeviceId = deviceId;
         isLoading = false;
       });
-      print("🖥️ UI UPDATED => Cost: $monthlyCost | Load: $load");
+
+      print("🖥️ UI UPDATED => Cost: $monthlyCost | Load: $load%");
 
     } catch (e) {
-
-      print("❌ Error: $e");
+      print("❌ Error in fetchBill: $e");
       if (!mounted) return;
       setState(() {
         isLoading = false;
@@ -68,14 +113,18 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
     }
   }
 
-
   @override
   void initState() {
     super.initState();
+    print("🔵 EnergyStatsGrid INIT");
+    print("   DeviceId: ${widget.deviceId}");
+    print("   RefreshTrigger: ${widget.refreshTrigger}");
+
     if (widget.deviceId != null && widget.deviceId!.isNotEmpty) {
       fetchBill(widget.deviceId!);
       _timer?.cancel();
 
+      // Auto refresh every 10 seconds
       _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
         print("🔄 AUTO REFRESH TRIGGERED at ${DateTime.now()}");
         if (widget.deviceId != null && widget.deviceId!.isNotEmpty) {
@@ -89,41 +138,62 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
   void didUpdateWidget(covariant EnergyStatsGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final newId = widget.deviceId;
-    final oldId = oldWidget.deviceId;
+    print("🟡 DID UPDATE WIDGET");
+    print("   Old deviceId: ${oldWidget.deviceId}");
+    print("   New deviceId: ${widget.deviceId}");
+    print("   Old refreshTrigger: ${oldWidget.refreshTrigger}");
+    print("   New refreshTrigger: ${widget.refreshTrigger}");
 
-    final deviceChanged = newId != oldId;
-    final refreshChanged = widget.refreshTrigger != oldWidget.refreshTrigger;
-
-    if (newId == null || newId.isEmpty) {
-      _timer?.cancel();
-      return;
-    }
-
-    if (deviceChanged) {
-      _timer?.cancel();
+    // Refresh when device changes OR refreshTrigger changes
+    if (widget.deviceId != oldWidget.deviceId ||
+        widget.refreshTrigger != oldWidget.refreshTrigger) {
+      print("🔄 Widget updated - refreshing...");
       _currentDeviceId = null;
-      fetchBill(newId);
-      return;
-    }
-
-    if (refreshChanged) {
-      _currentDeviceId = null;
-      fetchBill(newId);
+      fetchBill(widget.deviceId!);
     }
   }
 
   @override
   void dispose() {
+    print("🔴 DISPOSING EnergyStatsGrid");
     _timer?.cancel();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-    final double? currentLoad =
-    (widget.realtimeData != null && widget.realtimeData!.containsKey('load'))
-        ? (widget.realtimeData!['load'] as num).toDouble()
-        : load;
+    // Update current power from realtime data without full refresh
+    if (widget.realtimeData != null && mounted) {
+      double newPower = 0.0;
+
+      // Extract power from realtime data
+      if (widget.realtimeData!.containsKey('threePhase') &&
+          widget.realtimeData!['threePhase'] is Map) {
+        final threePhase = widget.realtimeData!['threePhase'] as Map;
+        if (threePhase.containsKey('power')) {
+          newPower = (threePhase['power'] as num).toDouble();
+        }
+      } else if (widget.realtimeData!.containsKey('power')) {
+        newPower = (widget.realtimeData!['power'] as num).toDouble();
+      } else if (widget.realtimeData!.containsKey('power_w')) {
+        newPower = (widget.realtimeData!['power_w'] as num).toDouble();
+      }
+
+      // If power changed significantly, recalculate load in real-time
+      if (newPower != _currentPower && newPower > 0 && _maxLoad != null && _maxLoad! > 0) {
+        print("⚡ Power changed from $_currentPower to $newPower - recalculating load");
+        _currentPower = newPower;
+        final newLoad = (newPower / _maxLoad!) * 100;
+        if (mounted) {
+          setState(() {
+            load = newLoad;
+          });
+        }
+      }
+    }
+
+    final double? currentLoad = load;
+
     return Column(
       children: [
         Row(
@@ -140,9 +210,7 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
             Expanded(
               child: _statCard(
                 title: "Monthly Est Cost",
-                value: isLoading
-                    ? "Loading..."
-                    : _formatCost(monthlyCost),
+                value: isLoading ? "Loading..." : _formatCost(monthlyCost),
                 valueColor: Colors.white,
                 icon: Icons.account_balance_wallet,
               ),
@@ -150,7 +218,15 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
           ],
         ),
         const SizedBox(height: 12),
-
+        // Debug info (remove in production)
+        if (_maxLoad != null && _currentPower != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              "${_currentPower?.toStringAsFixed(1)} kW / ${_maxLoad?.toStringAsFixed(0)} kW = ${load?.toStringAsFixed(1)}%",
+              style: const TextStyle(color: Colors.white38, fontSize: 9),
+            ),
+          ),
       ],
     );
   }
@@ -178,7 +254,6 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
               Icon(
@@ -189,7 +264,7 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
               const SizedBox(width: 6),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 10,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -213,10 +288,6 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
   }
 }
 
-
-
-
-
 String _formatLoad(dynamic load) {
   if (load == null) return "0%";
   return "${load.toStringAsFixed(0)}%";
@@ -224,18 +295,16 @@ String _formatLoad(dynamic load) {
 
 String _formatCost(dynamic cost) {
   if (cost == null) return "Rs 0.00";
-
   final format = NumberFormat.currency(
     locale: 'en_PK',
     symbol: 'Rs ',
   );
-
   return format.format(cost);
 }
+
 Color _loadColor(dynamic load) {
   if (load == null) return Colors.green;
   if (load >= 80) return Colors.redAccent;
   if (load >= 50) return Colors.yellowAccent;
   return Colors.greenAccent;
 }
-
