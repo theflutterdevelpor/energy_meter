@@ -48,6 +48,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final String baseUrl = 'http://3.231.62.206:5000/api/v1';
   int _refreshTrigger = 0;
   String? _currentEventName;
+  Future<ProfileModel?>? _profileFuture;
 
 
 
@@ -57,6 +58,8 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    debugPrint("🔵 DashboardPage INIT");
+    _profileFuture = ProfileApiService.getProfile();
     _loadDeviceIds();
     _loadDashboardData();
     _startReconnectTimer();
@@ -66,24 +69,13 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _startAutoRefresh() {
-    _autoRefreshTimer = Timer.periodic(
-      const Duration(seconds: 10),
-          (timer) {
-        if (!mounted) return;
-
-        debugPrint("🔄 Auto refreshing dashboard...");
-
-        if (_selectedDeviceId != null) {
-          fetchDeviceData(_selectedDeviceId!);
-        }
-
-        _loadDashboardData();
-
-        socketService.socket?.emit("get-realtime", {
-          "deviceId": _selectedDeviceId
-        });
-      },
-    );
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (!mounted) return;
+      _loadDashboardData();
+      if (_isSocketConnected && _selectedDeviceId != null) {
+        socketService.socket?.emit("get-realtime", {"deviceId": _selectedDeviceId});
+      }
+    });
   }
 
 
@@ -403,10 +395,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
         setState(() {
           realtimeData = Map.from(parsed);
-        });
-
-        // Force refresh for EnergyStatsGrid
-        setState(() {
           _refreshTrigger++;
         });
 
@@ -664,7 +652,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     socketService.socket?.off(_currentEventName!);
 
                     _joinDeviceRoom(value);
-                    // _listenRealtime();
+                    _listenRealtime();
                     fetchDeviceData(value);
                     _loadDashboardData();
                     setState(() {});
@@ -743,7 +731,7 @@ class _DashboardPageState extends State<DashboardPage> {
             child: GestureDetector(
               onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
               child: FutureBuilder<ProfileModel?>(
-                future: ProfileApiService.getProfile(),
+                future: _profileFuture,
                 builder: (context, snapshot) {
                   final profile = snapshot.data;
                   return CircleAvatar(
