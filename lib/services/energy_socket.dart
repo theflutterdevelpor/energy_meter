@@ -27,6 +27,7 @@ class SocketService {
         'http://3.231.62.206:5000',
         IO.OptionBuilder()
             .setTransports(['websocket'])
+            .setPath('/socket.io')
             .setExtraHeaders({'access_token': token})
             .enableReconnection()
             .enableAutoConnect()

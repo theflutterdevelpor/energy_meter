@@ -295,6 +295,10 @@ class _DashboardPageState extends State<DashboardPage> {
     debugPrint("🎧 Setting up listener for: $eventName");
 
     socketService.socket?.off(eventName);
+    socketService.socket?.onAny((event, data) {
+      debugPrint("🔍 ANY EVENT RECEIVED: '$event'");
+      debugPrint("🔍 DATA: $data");
+    });
 
     socketService.socket?.on(eventName, (data) {
       debugPrint("📡 RAW SOCKET DATA RECEIVED");
@@ -445,7 +449,8 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void dispose() {
     debugPrint("?? Dashboard dispose - Cleaning up socket");
-    _stopReconnectTimer();
+    _reconnectTimer?.cancel();
+    _autoRefreshTimer?.cancel();
     if (_currentEventName != null) {
       socketService.socket?.off(_currentEventName!);
     }
@@ -645,17 +650,20 @@ class _DashboardPageState extends State<DashboardPage> {
                     if (value == null) return;
                     debugPrint(" Device Changed => $value");
 
+                    if (_currentEventName != null) {
+                      socketService.socket?.off(_currentEventName!);
+                    }
+
                     setState(() {
                       _selectedDeviceId = value;
-                      realtimeData=null;
+                      realtimeData = null;
                     });
-                    socketService.socket?.off(_currentEventName!);
 
                     _joinDeviceRoom(value);
                     _listenRealtime();
                     fetchDeviceData(value);
                     _loadDashboardData();
-                    setState(() {});
+
                   },
                   items: _deviceIds
                       .map((id) => DropdownMenuItem(value: id, child: Text(id)))
@@ -663,28 +671,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
             ),
-
-          // IconButton(
-          //   icon: const Icon(
-          //     Icons.edit,
-          //     size: 20,
-          //     color: Colors.white70,
-          //   ),
-          //   onPressed: ()async {
-          //     debugPrint("✏️ Edit Device Clicked");
-          //
-          //     Map<String, dynamic> deviceData = await _getDeviceData();
-          //
-          //
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(builder: (context) => DeviceConfigForm(
-          //         showBackButton: true,
-          //         selectedDeviceId: _selectedDeviceId,
-          //       )),
-          //     );
-          //   },
-          // ),
 
           Stack(
             children: [

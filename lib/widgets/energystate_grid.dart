@@ -25,13 +25,9 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
   double? monthlyCost;
   bool isLoading = false;
   String? _currentDeviceId;
+  Timer? _timer;
   int? _maxLoad;
   double? _currentPower;
-
-
-
-
-
 
   Future<void> fetchBill(String deviceId) async {
     if (deviceId.isEmpty) return;
@@ -100,8 +96,9 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
 
       setState(() {
         monthlyCost = bill.totalCost;
+        // ✅ Use MANUALLY calculated load, NOT API load
         load = calculatedLoad > 0 ? calculatedLoad : bill.load;
-
+        _currentDeviceId = deviceId;
         isLoading = false;
       });
 
@@ -122,8 +119,18 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
     print("🔵 EnergyStatsGrid INIT");
     print("   DeviceId: ${widget.deviceId}");
     print("   RefreshTrigger: ${widget.refreshTrigger}");
+
     if (widget.deviceId != null && widget.deviceId!.isNotEmpty) {
       fetchBill(widget.deviceId!);
+      _timer?.cancel();
+
+      // Auto refresh every 10 seconds
+      _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+        print("🔄 AUTO REFRESH TRIGGERED at ${DateTime.now()}");
+        if (widget.deviceId != null && widget.deviceId!.isNotEmpty) {
+          fetchBill(widget.deviceId!);
+        }
+      });
     }
   }
 
@@ -148,6 +155,8 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
 
   @override
   void dispose() {
+    print("🔴 DISPOSING EnergyStatsGrid");
+    _timer?.cancel();
     super.dispose();
   }
 
