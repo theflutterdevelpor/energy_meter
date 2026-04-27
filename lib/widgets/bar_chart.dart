@@ -109,6 +109,7 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       debugPrint("📦 SOCKET DATA => ${widget.realtimeData}");
 
       final data = widget.realtimeData!;
+      if (!mounted) return;
 
       setState(() {
         // ========== PHASE 1 (A) ==========
@@ -206,6 +207,7 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       final tp = (apiData['threePhaseData'] as List).last;
 
       print("⚡ THREE PHASE RAW: $tp");
+      if (!mounted) return;
 
       setState(() {
         phaseCardsData['phaseOne']!['voltage'] = p1['avgVoltage'] ?? 0.0;
@@ -317,6 +319,7 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
 
 
   Future<void> loadEnergyData() async {
+    if (!mounted) return;
     setState(() => isLoading = true);
 
     final dates = getDateRange(selectedTimeFilter);
