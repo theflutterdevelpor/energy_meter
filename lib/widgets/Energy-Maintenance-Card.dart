@@ -6,7 +6,8 @@ import '../services/energy_services.dart';
 class EnergyMeterCard extends StatefulWidget {
   final Map<String, dynamic>? realtimeData;
   final String deviceId;
-  const EnergyMeterCard({super.key,this.realtimeData, required this.deviceId});
+  final int refreshTrigger;
+  const EnergyMeterCard({super.key,this.realtimeData, required this.deviceId, required this.refreshTrigger});
 
   @override
   State<EnergyMeterCard> createState() => _EnergyMeterCardState();
@@ -147,6 +148,11 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
   @override
   void didUpdateWidget(covariant EnergyMeterCard oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (widget.refreshTrigger != oldWidget.refreshTrigger) {
+      debugPrint("🔄 Refresh triggered (reading date changed)");
+      fetchEnergyData();
+    }
 
     if (widget.realtimeData != null) {
       debugPrint("🔄 REALTIME UPDATE RECEIVED: ${widget.realtimeData}");
