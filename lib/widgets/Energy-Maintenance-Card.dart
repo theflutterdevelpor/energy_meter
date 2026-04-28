@@ -59,6 +59,7 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
   // double monthlyEnergy = 0.0;
   double monthlyUnits = 0.0; // 👈 CHANGED
   double frequency = 50.0;
+  double _lastPower = -1;
 
 
   @override
@@ -83,10 +84,13 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
     try {
       debugPrint("📡 fetchEnergyData() START");
 
-      setState(() {
-        isLoading = true;
-        errorMessage = "";
-      });
+      if (monthlyUnits == 0 && totalPowerKw == 0) {
+        setState(() {
+          isLoading = true;
+        });
+      }
+
+      errorMessage = "";
 
       final now = DateTime.now();
       final todayDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
@@ -112,18 +116,18 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
       final bill = billResponse.data;
 
 
-      final List threePhaseData = data['threePhaseData'] ?? [];
-      if (threePhaseData.isNotEmpty) {
-        final latestData = threePhaseData.last;
-        totalPowerKw = (latestData['dailyAvgPower'] ?? 0.0).toDouble();
-        totalPowerW = totalPowerKw * 1000;
-        frequency = (latestData['dailyAvgFrequency'] ?? 50.0).toDouble();
-
-        debugPrint("✅ API POWER: $totalPowerKw KW");
-        debugPrint("✅ API POWER SET: $totalPowerKw KW");
-      } else {
-        debugPrint("⚠️ No threePhaseData found in API response");
-      }
+      // final List threePhaseData = data['threePhaseData'] ?? [];
+      // if (threePhaseData.isNotEmpty) {
+      //   final latestData = threePhaseData.last;
+      //   totalPowerKw = (latestData['dailyAvgPower'] ?? 0.0).toDouble();
+      //   totalPowerW = totalPowerKw * 1000;
+      //   frequency = (latestData['dailyAvgFrequency'] ?? 50.0).toDouble();
+      //
+      //   debugPrint("✅ API POWER: $totalPowerKw KW");
+      //   debugPrint("✅ API POWER SET: $totalPowerKw KW");
+      // } else {
+      //   debugPrint("⚠️ No threePhaseData found in API response");
+      // }
 
       todayEnergy = (data['todayEnergyUsage'] ?? 0.0).toDouble();
       monthlyUnits = _toDouble(bill.totalUnits, 0);
@@ -176,6 +180,9 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
         newPowerKw = _toDouble(widget.realtimeData!['power_w'], 0) / 1000;
         debugPrint("⚡ Socket Power (power_w): $newPowerKw KW");
       }
+      if ((newPowerKw - _lastPower).abs() < 0.05) return;
+
+      _lastPower = newPowerKw;
 
 
       if (newPowerKw >= 0) {

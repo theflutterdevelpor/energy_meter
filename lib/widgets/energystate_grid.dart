@@ -28,6 +28,7 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
   Timer? _timer;
   int? _maxLoad;
   double? _currentPower;
+  bool isFirstLoad = true;
 
   Future<void> fetchBill(String deviceId) async {
     if (deviceId.isEmpty) return;
@@ -36,9 +37,11 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
 
     if (!mounted) return;
 
-    setState(() {
-      isLoading = true;
-    });
+    if (isFirstLoad) {
+      setState(() {
+        isLoading = true;
+      });
+    }
 
     try {
       final allBillings = await BillingService.getAllBillings();
@@ -92,6 +95,7 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
         load = calculatedLoad > 0 ? calculatedLoad : bill.load;
         _currentDeviceId = deviceId;
         isLoading = false;
+        isFirstLoad = false;
       });
 
       print("🖥️ UI UPDATED => Cost: $monthlyCost | Load: $load%");
@@ -201,7 +205,9 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
             Expanded(
               child: _statCard(
                 title: "Monthly Est Cost",
-                value: isLoading ? "Loading..." : _formatCost(monthlyCost),
+                value: isLoading && isFirstLoad
+                    ? "Loading..."
+                    : _formatCost(monthlyCost),
                 valueColor: Colors.white,
                 icon: Icons.account_balance_wallet,
               ),
