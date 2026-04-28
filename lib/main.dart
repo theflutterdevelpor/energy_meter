@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
           if (snapshot.data == true) {
             return DashboardPage();
           } else {
-            return LoginScreen(); // ❌ not logged in
+            return LoginScreen();
           }
         },
       ),
