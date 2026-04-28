@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../services/device_service.dart';
 import '../services/energy_services.dart';
 
 
 class EnergyMeterCard extends StatefulWidget {
   final Map<String, dynamic>? realtimeData;
-  const EnergyMeterCard({super.key,this.realtimeData});
+  final String deviceId;
+  const EnergyMeterCard({super.key,this.realtimeData, required this.deviceId});
 
   @override
   State<EnergyMeterCard> createState() => _EnergyMeterCardState();
@@ -53,7 +55,8 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
   double totalPowerKw = 0.0;
   double totalPowerW = 0.0;
   double todayEnergy = 0.0;
-  double monthlyEnergy = 0.0;
+  // double monthlyEnergy = 0.0;
+  double monthlyUnits = 0.0; // 👈 CHANGED
   double frequency = 50.0;
 
 
@@ -93,6 +96,11 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
         toDate: todayDate,
       );
 
+      final billResponse =
+      await DeviceService.calculateBill(widget.deviceId);
+
+
+
       debugPrint("✅ API Response Received");
 
       if (response['success'] != true || response['data'] == null) {
@@ -100,6 +108,7 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
       }
 
       final data = response['data'];
+      final bill = billResponse.data;
 
 
       final List threePhaseData = data['threePhaseData'] ?? [];
@@ -116,10 +125,12 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
       }
 
       todayEnergy = (data['todayEnergyUsage'] ?? 0.0).toDouble();
-      monthlyEnergy = (data['thisMonthEnergyUsage'] ?? 0.0).toDouble();
+      monthlyUnits = _toDouble(bill.totalUnits, 0);
+      // monthlyEnergy = (data['thisMonthEnergyUsage'] ?? 0.0).toDouble();
 
       debugPrint("📊 Today Energy: $todayEnergy kWh");
-      debugPrint("📊 Monthly Energy: $monthlyEnergy kWh");
+      debugPrint("📦 Monthly Units: $monthlyUnits kWh");
+      // debugPrint("📊 Monthly Energy: $monthlyEnergy kWh");
 
       setState(() {
         isLoading = false;
@@ -166,23 +177,37 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
           totalPowerKw = newPowerKw;
           totalPowerW = totalPowerKw * 1000;
 
+          if (widget.realtimeData!.containsKey('totalUnits')) {
+            monthlyUnits = _toDouble(
+              widget.realtimeData!['totalUnits'],
+              monthlyUnits,
+            );
+            debugPrint("📦 Realtime Monthly Units: $monthlyUnits kWh");
+          }
+
 
           if (widget.realtimeData!.containsKey('threePhase') &&
               widget.realtimeData!['threePhase'] is Map) {
             frequency = _toDouble(widget.realtimeData!['threePhase']['frequency'], frequency);
           }
 
-          if (widget.realtimeData!.containsKey('today_energy') &&
-              widget.realtimeData!['today_energy'] != 0.0) {
-            todayEnergy = _toDouble(widget.realtimeData!['today_energy'], todayEnergy);
+          if (widget.realtimeData!.containsKey('todayEnergyUsage')) {
+            todayEnergy = _toDouble(
+              widget.realtimeData!['todayEnergyUsage'],
+              todayEnergy,
+            );
           }
 
-          if (widget.realtimeData!.containsKey('month_energy') &&
-              widget.realtimeData!['month_energy'] != 0.0) {
-            monthlyEnergy = _toDouble(widget.realtimeData!['month_energy'], monthlyEnergy);
-          }
+          // if (widget.realtimeData!.containsKey('thisMonthEnergyUsage')) {
+          //   monthlyEnergy = _toDouble(
+          //     widget.realtimeData!['thisMonthEnergyUsage'],
+          //     monthlyEnergy,
+          //   );
+          // }
 
           debugPrint("✅ UPDATED - Power: ${totalPowerKw}KW, Today: ${todayEnergy}kWh");
+
+          debugPrint("REALTIME DATA: ${widget.realtimeData}");
         });
       }
     }
@@ -192,7 +217,7 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
   Widget build(BuildContext context) {
     final safePower = totalPowerKw.isNaN ? 0.0 : totalPowerKw;
     final safeToday = todayEnergy.isNaN ? 0.0 : todayEnergy;
-    final safeMonthly = monthlyEnergy.isNaN ? 0.0 : monthlyEnergy;
+    // final safeMonthly = monthlyEnergy.isNaN ? 0.0 : monthlyEnergy;
     final safeFreq = frequency.isNaN ? 50.0 : frequency;
     debugPrint("BUILD CALLED - Power: $safePower KW, Today: $safeToday");
 
@@ -278,7 +303,7 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
               const SizedBox(width: 12),
               EnergyMeterCard.infoBox(
                 "MONTHLY",
-                monthlyEnergy.toStringAsFixed(2),
+                monthlyUnits.toStringAsFixed(2),
                 "kWh",
               ),
             ],

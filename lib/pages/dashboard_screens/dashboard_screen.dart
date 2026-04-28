@@ -756,7 +756,7 @@ class _DashboardPageState extends State<DashboardPage> {
             children: [
 
 
-               EnergyMeterCard(realtimeData: realtimeData,),
+               EnergyMeterCard(realtimeData: realtimeData,deviceId: _selectedDeviceId!,),
               const SizedBox(height: 17),
 
 

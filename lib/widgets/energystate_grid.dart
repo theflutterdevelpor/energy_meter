@@ -41,20 +41,17 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
     });
 
     try {
-      // 1. Get Max Load from Billing Config (database)
       final allBillings = await BillingService.getAllBillings();
       final billing = allBillings.firstWhere(
             (b) => b.data.deviceId == deviceId,
         orElse: () => throw Exception('No billing found for device $deviceId'),
       );
 
-      _maxLoad = billing.data.maxLoad; // Direct value, no default
+      _maxLoad = billing.data.maxLoad;
       print("📋 Max Load from DB: $_maxLoad kW");
 
-      // 2. Get Current Power from realtime data (socket)
       _currentPower = 0.0;
       if (widget.realtimeData != null) {
-        // Check threePhase power
         if (widget.realtimeData!.containsKey('threePhase') &&
             widget.realtimeData!['threePhase'] is Map) {
           final threePhase = widget.realtimeData!['threePhase'] as Map;
@@ -62,11 +59,9 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
             _currentPower = (threePhase['power'] as num).toDouble();
           }
         }
-        // Check direct power field
         else if (widget.realtimeData!.containsKey('power')) {
           _currentPower = (widget.realtimeData!['power'] as num).toDouble();
         }
-        // Check power_w field
         else if (widget.realtimeData!.containsKey('power_w')) {
           _currentPower = (widget.realtimeData!['power_w'] as num).toDouble();
         }
@@ -74,7 +69,6 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
 
       print("⚡ Current Power (realtime): $_currentPower kW");
 
-      // 3. Calculate Load Manually (NOT from API)
       double calculatedLoad = 0;
       if (_maxLoad != null && _maxLoad! > 0 && _currentPower != null && _currentPower! > 0) {
         calculatedLoad = (_currentPower! / _maxLoad!) * 100;
@@ -83,7 +77,6 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
         print("⚠️ Cannot calculate load - MaxLoad: $_maxLoad, CurrentPower: $_currentPower");
       }
 
-      // 4. Get Cost from API (only cost, not load)
       final billResponse = await DeviceService.calculateBill(deviceId);
       final bill = billResponse.data;
 
@@ -96,7 +89,6 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
 
       setState(() {
         monthlyCost = bill.totalCost;
-        // ✅ Use MANUALLY calculated load, NOT API load
         load = calculatedLoad > 0 ? calculatedLoad : bill.load;
         _currentDeviceId = deviceId;
         isLoading = false;
@@ -124,7 +116,6 @@ class _EnergyStatsGridState extends State<EnergyStatsGrid> {
       fetchBill(widget.deviceId!);
       _timer?.cancel();
 
-      // Auto refresh every 10 seconds
       _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
         print("🔄 AUTO REFRESH TRIGGERED at ${DateTime.now()}");
         if (widget.deviceId != null && widget.deviceId!.isNotEmpty) {
