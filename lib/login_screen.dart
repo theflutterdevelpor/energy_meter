@@ -109,6 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString('user_role', data.role);
       await prefs.setString('organization_id', data.organizationId);
       await prefs.setString('organization_name', data.organizationName);
+      print("✅ TOKEN SAVED: ${data.token}");
 
       if (rememberMe) {
         await prefs.setString('remembered_email', emailController.text.trim());
