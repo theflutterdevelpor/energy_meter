@@ -14,10 +14,7 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  Future<bool> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token') != null;
-  }
+
 
   @override
   Widget build(BuildContext context) {
