@@ -1,5 +1,4 @@
 import 'package:energy_meter/pages/dashboard_screens/dashboard_screen.dart';
-import 'package:energy_meter/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
