@@ -130,9 +130,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
     } catch (e) {
       debugPrint("❌ Error loading devices: $e");
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
@@ -749,17 +746,17 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
       body: SafeArea(
-        child: isLoading || _selectedDeviceId == null
-            ? const Center(
-          child: CircularProgressIndicator(color: Colors.green),
-        )
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator(
+          color: Colors.green,
+        ))
             : SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
 
 
-               EnergyMeterCard(realtimeData: realtimeData,deviceId: _selectedDeviceId ??"", refreshTrigger: _refreshTrigger,),
+               EnergyMeterCard(realtimeData: realtimeData,deviceId: _selectedDeviceId!, refreshTrigger: _refreshTrigger,),
               const SizedBox(height: 17),
 
 
