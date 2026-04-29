@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../bottom_nav_bar/home_nav_bar.dart';
 import '../models/request/billing_request.dart';
 import '../services/billing_service.dart';
@@ -143,10 +142,9 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
         }).toList();
       });
 
-      // ✅ IMPORTANT: SAVE ORGANIZATION ID HERE
       if (data.organizationId != null && data.organizationId.isNotEmpty) {
         await prefs.setString("organizationId", data.organizationId);
-        debugPrint("✅ ORG ID SAVED: ${data.organizationId}");
+        debugPrint(" ORG ID SAVED: ${data.organizationId}");
       }
 
     } catch (e) {

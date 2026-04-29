@@ -121,15 +121,15 @@ class _DashboardPageState extends State<DashboardPage> {
         }
       });
 
-      debugPrint("📱 Device IDs => $_deviceIds");
-      debugPrint("📌 Default Device => $_selectedDeviceId");
+      debugPrint(" Device IDs => $_deviceIds");
+      debugPrint(" Default Device => $_selectedDeviceId");
 
       if (_selectedDeviceId != null) {
         await _connectAndJoinSocket();
       }
 
     } catch (e) {
-      debugPrint("❌ Error loading devices: $e");
+      debugPrint(" Error loading devices: $e");
     }
   }
 
@@ -139,11 +139,11 @@ class _DashboardPageState extends State<DashboardPage> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      debugPrint("❌ No token found");
+      debugPrint(" No token found");
       return;
     }
 
-    debugPrint("🔑 Token found, connecting socket");
+    debugPrint(" Token found, connecting socket");
 
     if (socketService.socket?.connected ?? false) {
       socketService.disconnect();
@@ -154,7 +154,7 @@ class _DashboardPageState extends State<DashboardPage> {
     socketService.socket?.offAny();
 
     socketService.socket?.onConnect((_) {
-      debugPrint("🟢 SOCKET CONNECTED");
+      debugPrint(" SOCKET CONNECTED");
       _isSocketConnected = true;
       if (_selectedDeviceId != null) {
         _joinDeviceRoom(_selectedDeviceId!);
@@ -163,12 +163,12 @@ class _DashboardPageState extends State<DashboardPage> {
     });
 
     socketService.socket?.onDisconnect((_) {
-      debugPrint("🔴 SOCKET DISCONNECTED");
+      debugPrint(" SOCKET DISCONNECTED");
       _isSocketConnected = false;
     });
 
     socketService.socket?.onConnectError((err) {
-      debugPrint("❌ SOCKET ERROR: $err");
+      debugPrint(" SOCKET ERROR: $err");
     });
 
     if (socketService.socket?.connected ?? false) {
@@ -310,12 +310,10 @@ class _DashboardPageState extends State<DashboardPage> {
         if (data is Map) {
           parsed = Map<String, dynamic>.from(data);
 
-          // Check for threePhase data and convert power if needed
           if (parsed.containsKey('threePhase') && parsed['threePhase'] is Map) {
             final threePhase = parsed['threePhase'] as Map;
             if (threePhase.containsKey('power')) {
               double powerValue = (threePhase['power'] as num).toDouble();
-              // Convert to kW if value is in Watts (value > 100)
               if (powerValue > 100) {
                 powerValue = powerValue / 1000;
                 debugPrint("⚡ Converted Watts to KW: ${powerValue}KW");
@@ -325,19 +323,15 @@ class _DashboardPageState extends State<DashboardPage> {
               threePhase['power'] = powerValue;
             }
 
-            // Also extract frequency
             if (threePhase.containsKey('frequency')) {
               double freqValue = (threePhase['frequency'] as num).toDouble();
-              debugPrint("📊 Frequency: ${freqValue}Hz");
+              debugPrint(" Frequency: ${freqValue}Hz");
             }
           }
 
-          // Extract individual phase data (Phase A, B, C)
-          // Phase 1 (A) - voltage, current, power
           if (parsed.containsKey('phaseOne') && parsed['phaseOne'] is Map) {
             final phase1 = parsed['phaseOne'] as Map;
 
-            // Convert power if in Watts
             if (phase1.containsKey('power')) {
               double powerValue = (phase1['power'] as num).toDouble();
               if (powerValue > 100) {
@@ -345,10 +339,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 phase1['power'] = powerValue;
               }
             }
-            debugPrint("🔴 PHASE A - Power: ${phase1['power']} kW");
+            debugPrint(" PHASE A - Power: ${phase1['power']} kW");
           }
 
-          // Phase 2 (B)
           if (parsed.containsKey('phaseTwo') && parsed['phaseTwo'] is Map) {
             final phase2 = parsed['phaseTwo'] as Map;
             if (phase2.containsKey('power')) {
@@ -358,10 +351,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 phase2['power'] = powerValue;
               }
             }
-            debugPrint("🟡 PHASE B - Power: ${phase2['power']} kW");
+            debugPrint(" PHASE B - Power: ${phase2['power']} kW");
           }
 
-          // Phase 3 (C)
           if (parsed.containsKey('phaseThree') && parsed['phaseThree'] is Map) {
             final phase3 = parsed['phaseThree'] as Map;
             if (phase3.containsKey('power')) {
@@ -371,10 +363,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 phase3['power'] = powerValue;
               }
             }
-            debugPrint("🔵 PHASE C - Power: ${phase3['power']} kW");
+            debugPrint(" PHASE C - Power: ${phase3['power']} kW");
           }
 
-          // Also check for direct power_w (total power)
           if (parsed.containsKey('power_w')) {
             double totalPower = (parsed['power_w'] as num).toDouble();
             if (totalPower > 100) {
@@ -384,16 +375,15 @@ class _DashboardPageState extends State<DashboardPage> {
             debugPrint("⚡ Total Power from power_w: ${totalPower}KW");
           }
 
-          // Preserve frequency for backward compatibility
           if (parsed.containsKey('frequency')) {
             double freqValue = (parsed['frequency'] as num).toDouble();
-            debugPrint("📊 Top-level Frequency: ${freqValue}Hz");
+            debugPrint(" Top-level Frequency: ${freqValue}Hz");
           }
 
           parsed['deviceId'] = _selectedDeviceId;
         }
 
-        debugPrint("✅ FINAL realtimeData => $parsed");
+        debugPrint(" FINAL realtimeData => $parsed");
 
         if (!mounted) return;
 
@@ -403,11 +393,10 @@ class _DashboardPageState extends State<DashboardPage> {
         });
 
       } catch (e) {
-        debugPrint("❌ Parse error: $e");
+        debugPrint(" Parse error: $e");
       }
     });
 
-    // Request initial realtime data after setting up listener
     if (socketService.socket?.connected ?? false) {
       Future.delayed(Duration(milliseconds: 500), () {
         socketService.socket?.emit("get-realtime", {"deviceId": _selectedDeviceId});
@@ -468,12 +457,12 @@ class _DashboardPageState extends State<DashboardPage> {
       debugPrint("🔐 Token: $token");
 
       if (token == null) {
-        debugPrint("❌ No token found");
+        debugPrint(" No token found");
         return;
       }
 
       final url = '$baseUrl/org/devices?deviceId=$deviceId';
-      debugPrint("🌐 API URL: $url");
+      debugPrint(" API URL: $url");
 
       final response = await http.get(
         Uri.parse(url),
@@ -486,43 +475,43 @@ class _DashboardPageState extends State<DashboardPage> {
         onTimeout: () => throw Exception('Timeout'),
       );
 
-      debugPrint("📡 Status Code: ${response.statusCode}");
-      debugPrint("📦 Raw Response: ${response.body}");
+      debugPrint(" Status Code: ${response.statusCode}");
+      debugPrint(" Raw Response: ${response.body}");
 
       if (!mounted) return;
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
 
-        debugPrint("✅ Parsed JSON: $jsonData");
+        debugPrint(" Parsed JSON: $jsonData");
 
         final result = DeviceResponse.fromJson(jsonData);
 
-        debugPrint("📊 Total Devices: ${result.data.length}");
+        debugPrint(" Total Devices: ${result.data.length}");
 
         if (result.data.isNotEmpty) {
           final device = result.data.first;
 
-          debugPrint("🔌 Device Name: ${device.name}");
-          debugPrint("🆔 Device ID: ${device.deviceId}");
-          debugPrint("📶 Status: ${device.status}");
+          debugPrint(" Device Name: ${device.name}");
+          debugPrint(" Device ID: ${device.deviceId}");
+          debugPrint(" Status: ${device.status}");
 
-          debugPrint("📡 Sensors List:");
+          debugPrint(" Sensors List:");
           for (var sensor in device.sensors) {
-            debugPrint("➡️ ${sensor.name} (${sensor.unit})");
+            debugPrint(" ${sensor.name} (${sensor.unit})");
           }
 
           setState(() {
             this.device = device;
           });
         } else {
-          debugPrint("⚠️ No device found");
+          debugPrint(" No device found");
         }
       } else {
-        debugPrint("❌ API Error: ${response.statusCode}");
+        debugPrint(" API Error: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("❌ Exception: $e");
+      debugPrint(" Exception: $e");
     }
   }
 
@@ -588,7 +577,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
 
   void _refreshAfterConfig() {
-    debugPrint("🔄 Config updated → refreshing bill & UI");
+    debugPrint(" Config updated → refreshing bill & UI");
 
     if (_selectedDeviceId != null && _selectedDeviceId!.isNotEmpty) {
 

@@ -19,14 +19,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Wattpro',
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(), // ✅ LoginScreen nahi
+      home: const SplashScreen(),
     );
   }
 }
 
-// =============================================
-// SPLASH SCREEN — Token Check Karta Hai
-// =============================================
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -45,46 +43,42 @@ class _SplashScreenState extends State<SplashScreen> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
-    print("🔍 SPLASH TOKEN: $token");
+    print(" SPLASH TOKEN: $token");
 
     if (!mounted) return;
 
-    // ❌ Token nahi → Login
     if (token == null || token.isEmpty) {
-      print("❌ Token nahi → Login");
+      print(" Token nahi → Login");
       _goTo(const LoginScreen());
       return;
     }
 
-    // ✅ Token expire check
     if (_isTokenExpired(token)) {
-      print("⌛ Token expire ho gaya → Login");
+      print(" Token expire ho gaya → Login");
       await prefs.remove('auth_token');
       await prefs.remove('has_devices');
       _goTo(const LoginScreen());
       return;
     }
 
-    // ✅ Token theek hai → Server se devices check karo
     print("✅ Token theek hai → Devices check kar raha hoon");
     try {
       final devices = await DeviceService.getDevices();
       final hasDevices = devices.any((d) => d.name == "Energy Meter");
       await prefs.setBool('has_devices', hasDevices);
 
-      print("📱 Has Devices: $hasDevices");
+      print(" Has Devices: $hasDevices");
 
       if (!mounted) return;
 
       if (hasDevices) {
-        _goTo(HomeScreen());       // ✅ Device hai → Dashboard
+        _goTo(HomeScreen());
       } else {
-        _goTo(const DeviceReadingForm(showBackButton: false)); // ✅ Device nahi
+        _goTo(const DeviceReadingForm(showBackButton: false));
       }
     } catch (e) {
-      print("❌ Device check error: $e");
+      print(" Device check error: $e");
 
-      // Network error → local se check karo
       final hasDevices = prefs.getBool('has_devices') ?? false;
       if (!mounted) return;
 
@@ -96,7 +90,6 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-  // Token expire check
   bool _isTokenExpired(String token) {
     try {
       final parts = token.split('.');
@@ -108,14 +101,13 @@ class _SplashScreenState extends State<SplashScreen> {
       final exp = data['exp'] as int;
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-      print("⏰ Token exp: ${DateTime.fromMillisecondsSinceEpoch(exp * 1000)}");
+      print(" Token exp: ${DateTime.fromMillisecondsSinceEpoch(exp * 1000)}");
       return now >= exp;
     } catch (e) {
       return true;
     }
   }
 
-  // Navigate helper
   void _goTo(Widget screen) {
     Navigator.pushReplacement(
       context,
