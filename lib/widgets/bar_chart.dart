@@ -210,63 +210,37 @@ class _PhaseEnergyWidgetState extends State<PhaseEnergyWidget> {
       if (!mounted) return;
 
       setState(() {
-        phaseCardsData['phaseOne']!['voltage'] = p1['avgVoltage'] ?? 0.0;
-        phaseCardsData['phaseOne']!['current'] = p1['avgCurrent'] ?? 0.0;
-        phaseCardsData['phaseOne']!['power']   = p1['avgPower'] ?? 0.0;
-        phaseCardsData['phaseOne']!['reactivePower'] = p1['avgReactivePower'] ?? 0.0;
-        phaseCardsData['phaseOne']!['apparentPower'] = p1['avgApparentPower'] ?? 0.0;
-        phaseCardsData['phaseOne']!['frequency']     = p1['avgFrequency'] ?? 0.0;
-        phaseCardsData['phaseOne']!['pf']      = p1['avgPowerFactor'] ?? 0.0;
+        phaseCardsData['phaseOne']!['voltage'] = (p1['avgVoltage'] ?? 0).toDouble();
+        phaseCardsData['phaseOne']!['current'] = (p1['avgCurrent'] ?? 0).toDouble();
+        phaseCardsData['phaseOne']!['power']   = (p1['avgPower'] ?? 0).toDouble();
+        phaseCardsData['phaseOne']!['reactivePower'] = (p1['avgReactivePower'] ?? 0).toDouble();
+        phaseCardsData['phaseOne']!['apparentPower'] = (p1['avgApparentPower'] ?? 0).toDouble();
+        phaseCardsData['phaseOne']!['frequency']     = (p1['avgFrequency'] ?? 0).toDouble();
+        phaseCardsData['phaseOne']!['pf']      = (p1['avgPowerFactor'] ?? 0).toDouble();
 
-        phaseCardsData['phaseTwo']!['voltage'] = p2['avgVoltage'] ?? 0.0;
-        phaseCardsData['phaseTwo']!['current'] = p2['avgCurrent'] ?? 0.0;
-        phaseCardsData['phaseTwo']!['power']   = p2['avgPower'] ?? 0.0;
-        phaseCardsData['phaseTwo']!['reactivePower'] = p2['avgReactivePower'] ?? 0.0;
-        phaseCardsData['phaseTwo']!['apparentPower'] = p2['avgApparentPower'] ?? 0.0;
-        phaseCardsData['phaseTwo']!['frequency']     = p2['avgFrequency'] ?? 0.0;
-        phaseCardsData['phaseTwo']!['pf']      = p2['avgPowerFactor'] ?? 0.0;
+        phaseCardsData['phaseTwo']!['voltage'] = (p2['avgVoltage'] ?? 0).toDouble();
+        phaseCardsData['phaseTwo']!['current'] = (p2['avgCurrent'] ?? 0).toDouble();
+        phaseCardsData['phaseTwo']!['power']   = (p2['avgPower'] ?? 0).toDouble();
+        phaseCardsData['phaseTwo']!['reactivePower'] = (p2['avgReactivePower'] ?? 0).toDouble();
+        phaseCardsData['phaseTwo']!['apparentPower'] = (p2['avgApparentPower'] ?? 0).toDouble();
+        phaseCardsData['phaseTwo']!['frequency']     = (p2['avgFrequency'] ?? 0).toDouble();
+        phaseCardsData['phaseTwo']!['pf']      = (p2['avgPowerFactor'] ?? 0).toDouble();
 
-        phaseCardsData['phaseThree']!['voltage'] = p3['avgVoltage'] ?? 0.0;
-        phaseCardsData['phaseThree']!['current'] = p3['avgCurrent'] ?? 0.0;
-        phaseCardsData['phaseThree']!['power']   = p3['avgPower'] ?? 0.0;
-        phaseCardsData['phaseThree']!['reactivePower'] = p3['avgReactivePower'] ?? 0.0;
-        phaseCardsData['phaseThree']!['apparentPower'] = p3['avgApparentPower'] ?? 0.0;
-        phaseCardsData['phaseThree']!['frequency']     = p3['avgFrequency'] ?? 0.0;
-        phaseCardsData['phaseThree']!['pf']      = p3['avgPowerFactor'] ?? 0.0;
+        phaseCardsData['phaseThree']!['voltage'] = (p3['avgVoltage'] ?? 0).toDouble();
+        phaseCardsData['phaseThree']!['current'] = (p3['avgCurrent'] ?? 0).toDouble();
+        phaseCardsData['phaseThree']!['power']   = (p3['avgPower'] ?? 0).toDouble();
+        phaseCardsData['phaseThree']!['reactivePower'] = (p3['avgReactivePower'] ?? 0).toDouble();
+        phaseCardsData['phaseThree']!['apparentPower'] = (p3['avgApparentPower'] ?? 0).toDouble();
+        phaseCardsData['phaseThree']!['frequency']     = (p3['avgFrequency'] ?? 0).toDouble();
+        phaseCardsData['phaseThree']!['pf']      = (p3['avgPowerFactor'] ?? 0).toDouble();
 
-
-        phaseCardsData['threePhase']!['voltage'] = tp['avgVoltage'] ?? 0.0;
-        phaseCardsData['threePhase']!['current'] = tp['avgCurrent'] ?? 0.0;
-        phaseCardsData['threePhase']!['power']   = tp['avgPower'] ?? 0.0;
-        phaseCardsData['threePhase']!['reactivePower'] = tp['avgReactivePower'] ?? 0.0;
-        phaseCardsData['threePhase']!['apparentPower'] = tp['avgApparentPower'] ?? 0.0;
-        phaseCardsData['threePhase']!['frequency']     = tp['avgFrequency'] ?? 0.0;
-        phaseCardsData['threePhase']!['pf']      = tp['avgPowerFactor'] ?? 0.0;
-
-        print("✅ FINAL UI DATA:");
-        print("---- PHASE 1 ----");
-        print("Voltage: ${phaseCardsData['phaseOne']!['voltage']}");
-        print("Current: ${phaseCardsData['phaseOne']!['current']}");
-        print("Power: ${phaseCardsData['phaseOne']!['power']}");
-        print("ApparentPower: ${phaseCardsData['phaseOne']!['apparentPower']}");
-        print("ReactivePower: ${phaseCardsData['phaseOne']!['reactivePower']}");
-        print("Frequency: ${phaseCardsData['phaseOne']!['frequency']}");
-        print("PF: ${phaseCardsData['phaseOne']!['pf']}");
-
-        print("---- PHASE 2 ----");
-        print("ApparentPower: ${phaseCardsData['phaseTwo']!['apparentPower']}");
-        print("ReactivePower: ${phaseCardsData['phaseTwo']!['reactivePower']}");
-        print("Frequency: ${phaseCardsData['phaseTwo']!['frequency']}");
-
-        print("---- PHASE 3 ----");
-        print("ApparentPower: ${phaseCardsData['phaseThree']!['apparentPower']}");
-        print("ReactivePower: ${phaseCardsData['phaseThree']!['reactivePower']}");
-        print("Frequency: ${phaseCardsData['phaseThree']!['frequency']}");
-
-        print("---- THREE PHASE ----");
-        print("ApparentPower: ${phaseCardsData['threePhase']!['apparentPower']}");
-        print("ReactivePower: ${phaseCardsData['threePhase']!['reactivePower']}");
-        print("Frequency: ${phaseCardsData['threePhase']!['frequency']}");
+        phaseCardsData['threePhase']!['voltage'] = (tp['avgVoltage'] ?? 0).toDouble();
+        phaseCardsData['threePhase']!['current'] = (tp['avgCurrent'] ?? 0).toDouble();
+        phaseCardsData['threePhase']!['power']   = (tp['avgPower'] ?? 0).toDouble();
+        phaseCardsData['threePhase']!['reactivePower'] = (tp['avgReactivePower'] ?? 0).toDouble();
+        phaseCardsData['threePhase']!['apparentPower'] = (tp['avgApparentPower'] ?? 0).toDouble();
+        phaseCardsData['threePhase']!['frequency']     = (tp['avgFrequency'] ?? 0).toDouble();
+        phaseCardsData['threePhase']!['pf']      = (tp['avgPowerFactor'] ?? 0).toDouble();
       });
     } catch (e) {
       debugPrint("Card API Error: $e");

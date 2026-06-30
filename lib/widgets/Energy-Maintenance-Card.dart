@@ -149,6 +149,44 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
       });
     }
   }
+
+  // Future<void> fetchEnergyData() async {
+  //   try {
+  //     setState(() => isLoading = true);
+  //
+  //     final now = DateTime.now();
+  //     final todayDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+  //     final firstDayOfMonth = "${now.year}-${now.month.toString().padLeft(2, '0')}-01";
+  //
+  //     // ✅ Energy data pehle — ye zaroor chahiye
+  //     final response = await EnergyService.fetchEnergy(
+  //       fromDate: firstDayOfMonth,
+  //       toDate: todayDate,
+  //     );
+  //
+  //     final data = response['data'];
+  //     todayEnergy = (data['todayEnergyUsage'] ?? 0.0).toDouble();
+  //
+  //     setState(() => isLoading = false);
+  //
+  //   } catch (e) {
+  //     debugPrint("❌ Energy error: $e");
+  //     setState(() {
+  //       errorMessage = "Failed to load energy data";
+  //       isLoading = false;
+  //     });
+  //   }
+  //
+  //   // ✅ Billing ALAG try-catch mein
+  //   try {
+  //     final billResponse = await DeviceService.calculateBill(widget.deviceId);
+  //     monthlyUnits = _toDouble(billResponse.data.totalUnits, 0);
+  //     setState(() {});
+  //   } catch (e) {
+  //     debugPrint("❌ Billing nahi mili, ignore: $e");
+  //     monthlyUnits = 0.0; // ya "-" dikhao UI mein
+  //   }
+  // }
   @override
   void didUpdateWidget(covariant EnergyMeterCard oldWidget) {
     super.didUpdateWidget(oldWidget);
