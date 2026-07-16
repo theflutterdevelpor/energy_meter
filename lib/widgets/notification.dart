@@ -85,22 +85,67 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
   }
 
+  // Future<void> _markSingleAsRead(NotificationModel notification) async {
+  //   if (notification.read) return;
+  //
+  //   final success = await NotificationApi.markAsRead(
+  //     notificationId: notification.id,
+  //   );
+  //   print("API Success: $success");
+  //   if (success) {
+  //     await _fetchNotifications();
+  //   }
+  //
+  //   if (success) {
+  //     setState(() {
+  //       final index = _notifications.indexWhere((n) => n.id == notification.id);
+  //       if (index != -1) {
+  //         _notifications[index] = notification.copyWith(read: true);
+  //       }
+  //     });
+  //     _hasChanges = true;
+  //     print("Local Read Updated");
+  //   } else {
+  //     print("API Failed");
+  //   }
+  // }
+
   Future<void> _markSingleAsRead(NotificationModel notification) async {
-    if (notification.read) return;
+
+    print("=== _markSingleAsRead Called ===");
+    print("Notification ID: ${notification.id}");
+    print("Current Read: ${notification.read}");
+    if (notification.read) {
+      print("Already Read");
+      return;
+    }
 
     final success = await NotificationApi.markAsRead(
       notificationId: notification.id,
     );
 
-    if (success) {
-      setState(() {
-        final index = _notifications.indexWhere((n) => n.id == notification.id);
-        if (index != -1) {
-          _notifications[index] = notification.copyWith(read: true);
-        }
-      });
-      _hasChanges = true;
+    print("API Success: $success");
+
+    if (!success) {
+      print("API Failed");
+      return;
     }
+
+    setState(() {
+      final index =
+      _notifications.indexWhere((n) => n.id == notification.id);
+
+      if (index != -1) {
+        _notifications[index] =
+            _notifications[index].copyWith(read: true);
+      }
+    });
+
+    print("Local Read Updated");
+
+    await _fetchNotifications();
+
+    _hasChanges = true;
   }
 
 
@@ -284,7 +329,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         itemBuilder: (context, index) {
           final n = filtered[index];
           return GestureDetector(
-            onTap: () => _markSingleAsRead(n),
+              onTap: () async {
+                print("Notification tapped: ${n.id}");
+                await _markSingleAsRead(n);
+              },
             child: buildNotificationTile(
               title: n.title,
               message: n.message,
