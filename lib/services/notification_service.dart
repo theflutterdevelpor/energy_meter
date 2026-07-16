@@ -47,7 +47,7 @@ class NotificationApi {
   static Future<bool> markAsRead({
     required String notificationId,
   }) async {
-    final uri = Uri.parse("$baseUrl/org/read-notification/$notificationId");
+    final uri = Uri.parse("$baseUrl/org/notifications/read/$notificationId");
     final headers = await getHeaders();
 
     print("PUT READ NOTIFICATION URL: $uri");

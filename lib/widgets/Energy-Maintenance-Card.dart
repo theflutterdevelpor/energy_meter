@@ -57,7 +57,7 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
   double totalPowerW = 0.0;
   double todayEnergy = 0.0;
   // double monthlyEnergy = 0.0;
-  double monthlyUnits = 0.0; // 👈 CHANGED
+  double monthlyUnits = 0.0;
   double frequency = 50.0;
   double _lastPower = -1;
 
@@ -312,7 +312,7 @@ class _EnergyMeterCardState extends State<EnergyMeterCard> {
                       fontSize: 14)),
               Spacer(),
 
-              Text("${frequency.toStringAsFixed(2)} Hz",
+              Text("${frequency.toStringAsFixed(0)}Hz",
                   style: TextStyle(
                       color: Colors.grey,
                       fontSize: 12)),

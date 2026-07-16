@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../login_screen.dart';
 import '../models/response/profile_response.dart';
 import '../services/profile_services.dart';
+import 'about_screen.dart';
 import 'add_device.dart';
 import 'configration_screen.dart';
 import 'edit_profile.dart';
@@ -174,7 +175,12 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                 // Navigate to Report Screen
               }),
               _item(context, Icons.info_outline, "About Digital Twin", () {
-                // Navigate to About Screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>  AboutScreen(),
+                  ),
+                ); // Navigate to About Screen
               }),
 
               const Spacer(),

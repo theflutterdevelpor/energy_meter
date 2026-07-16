@@ -467,6 +467,9 @@ class _ProfileCardScreenState extends State<ProfileCardScreen> {
       enableInteractiveSelection: false,
       obscureText: true,
       cursorColor: Colors.green,
+      style: const TextStyle(
+        color: Colors.white,
+      ),
       decoration: InputDecoration(
           labelText: label,
           floatingLabelStyle: const TextStyle(color: Colors.green),
