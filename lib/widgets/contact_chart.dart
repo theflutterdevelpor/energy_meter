@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ContactSensorChart extends StatefulWidget {
-  const ContactSensorChart({Key? key}) : super(key: key);
+  const ContactSensorChart({super.key});
 
   @override
   State<ContactSensorChart> createState() => _ContactSensorChartState();

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class MotionSensorChart extends StatefulWidget {
-  const MotionSensorChart({Key? key}) : super(key: key);
+  const MotionSensorChart({super.key});
 
   @override
   State<MotionSensorChart> createState() => _MotionSensorChartState();

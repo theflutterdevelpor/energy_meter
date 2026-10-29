@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class SmokeChart extends StatefulWidget {
-  const SmokeChart({Key? key}) : super(key: key);
+  const SmokeChart({super.key});
 
   @override
   State<SmokeChart> createState() => _SmokeChartState();

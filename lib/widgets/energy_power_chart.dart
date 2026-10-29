@@ -6,8 +6,7 @@ import '../services/energy_services.dart';
 class EnergyPowerChart extends StatefulWidget {
   final String selectedFilter;
   final String selectedPhase;
-  const EnergyPowerChart({Key? key, required this.selectedFilter,required this.selectedPhase,})
-      : super(key: key);
+  const EnergyPowerChart({super.key, required this.selectedFilter,required this.selectedPhase,});
 
   @override
   State<EnergyPowerChart> createState() => _EnergyPowerChartState();

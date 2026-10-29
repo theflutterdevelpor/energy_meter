@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class CO2Chart extends StatefulWidget {
-  const CO2Chart({Key? key}) : super(key: key);
+  const CO2Chart({super.key});
 
   @override
   State<CO2Chart> createState() => _CO2ChartState();

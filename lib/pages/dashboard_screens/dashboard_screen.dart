@@ -712,11 +712,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   return CircleAvatar(
                     backgroundColor: Colors.green.shade100,
                     backgroundImage: (profile?.image?.url != null &&
-                        profile!.image!.url!.isNotEmpty)
-                        ? NetworkImage(profile.image!.url!)
+                        profile!.image!.url.isNotEmpty)
+                        ? NetworkImage(profile.image!.url)
                         : null,
                     child: (profile?.image?.url == null ||
-                        profile?.image?.url?.isEmpty == true)
+                        profile?.image?.url.isEmpty == true)
                         ? Text(
                       profile?.name.isNotEmpty == true
                           ? profile!.name[0].toUpperCase()

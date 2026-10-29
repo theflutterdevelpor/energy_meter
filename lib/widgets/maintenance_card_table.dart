@@ -118,17 +118,6 @@ class _MaintenanceCardTableState extends State<MaintenanceCardTable> {
                     color: Colors.white,
                   ),
                   child: PopupMenuButton<String>(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          selectedFilter,
-                          style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                        const Icon(Icons.keyboard_arrow_down, size: 20),
-                      ],
-                    ),
                     onSelected: (String value) {
                       setState(() {
                         selectedFilter = value;
@@ -148,6 +137,17 @@ class _MaintenanceCardTableState extends State<MaintenanceCardTable> {
                       }).toList();
                     },
                     padding: EdgeInsets.zero,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          selectedFilter,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down, size: 20),
+                      ],
+                    ),
                   ),
                 ),
               ],

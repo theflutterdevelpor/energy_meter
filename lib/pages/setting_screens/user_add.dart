@@ -542,7 +542,7 @@ class _useraddState extends State<useradd> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedRoleId,
+                  initialValue: selectedRoleId,
                   hint: Text(
                     isRoleLoading ? 'Loading roles...' : 'Select Role',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -595,7 +595,7 @@ class _useraddState extends State<useradd> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedBuildingId,
+                  initialValue: selectedBuildingId,
                   hint: Text(
                     'Select Building',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -659,7 +659,7 @@ class _useraddState extends State<useradd> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedFloorId,
+                  initialValue: selectedFloorId,
                   hint: Text(
                     'Select Floor',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -716,7 +716,7 @@ class _useraddState extends State<useradd> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                Container(
+                SizedBox(
                   width: 200,
                   child: Text(
                     "This is where people will see your actual face",

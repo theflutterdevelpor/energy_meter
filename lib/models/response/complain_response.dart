@@ -39,10 +39,10 @@ class Complaint {
 
   Complaint copyWith({String? status}) {
     return Complaint(
-      id: this.id,
-      title: this.title,
-      name: this.name,
-      createdAt: this.createdAt,
+      id: id,
+      title: title,
+      name: name,
+      createdAt: createdAt,
       status: status ?? this.status,
 
       contact: contact,

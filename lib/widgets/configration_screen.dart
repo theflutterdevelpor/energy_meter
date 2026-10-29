@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../bottom_nav_bar/home_nav_bar.dart';
 import '../models/request/billing_request.dart';
 import '../services/billing_service.dart';
 import '../services/device_service.dart';
@@ -49,7 +46,7 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
   final _formKey = GlobalKey<FormState>();
 
 
-  DateTime _selectedDate = DateTime.now();
+  final DateTime _selectedDate = DateTime.now();
 
   final _deviceIdCtrl = TextEditingController();
   final _maxLoadCtrl  = TextEditingController();
@@ -142,7 +139,7 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
         }).toList();
       });
 
-      if (data.organizationId != null && data.organizationId.isNotEmpty) {
+      if (data.organizationId.isNotEmpty) {
         await prefs.setString("organizationId", data.organizationId);
         debugPrint(" ORG ID SAVED: ${data.organizationId}");
       }
@@ -412,7 +409,7 @@ class _DeviceConfigFormState extends State<DeviceConfigForm> {
         const SizedBox(height: 6),
 
         DropdownButtonFormField<String>(
-          value: (value != null && value.isNotEmpty && items.contains(value))
+          initialValue: (value != null && value.isNotEmpty && items.contains(value))
               ? value
               : null,
           validator: validator,

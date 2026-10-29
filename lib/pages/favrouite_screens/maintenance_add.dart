@@ -137,7 +137,7 @@ class _addnewState extends State<addnew> {
   String? _selectedFloor;
   String? _selectedSpace;
 
-  List<File> _selectedImages = [];
+  final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
 
 
@@ -353,7 +353,7 @@ class _addnewState extends State<addnew> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _selectedPriority,
+                  initialValue: _selectedPriority,
                   hint: Text(
                     'Select Priority',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -403,7 +403,7 @@ class _addnewState extends State<addnew> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   hint: Text(
                     'Select Type',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -491,7 +491,7 @@ class _addnewState extends State<addnew> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedBuildingId,
+                  initialValue: selectedBuildingId,
                   hint: Text(
                     'Select Building',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -556,7 +556,7 @@ class _addnewState extends State<addnew> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedFloorId,
+                  initialValue: selectedFloorId,
                   hint: Text(
                     'Select Floor',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -614,7 +614,7 @@ class _addnewState extends State<addnew> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _selectedSpace,
+                  initialValue: _selectedSpace,
                   hint: Text(
                     'Select Space',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),

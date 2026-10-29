@@ -6,7 +6,7 @@ import '../services/energy_services.dart';
 class FrequencyChart extends StatefulWidget {
   final String selectedFilter;
   final String selectedPhase;
-  const FrequencyChart({Key? key, required this.selectedFilter,required this.selectedPhase}) : super(key: key);
+  const FrequencyChart({super.key, required this.selectedFilter,required this.selectedPhase});
 
   @override
   State<FrequencyChart> createState() => _FrequencyChartState();

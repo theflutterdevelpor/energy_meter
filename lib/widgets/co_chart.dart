@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class COChart extends StatefulWidget {
-  const COChart({Key? key}) : super(key: key);
+  const COChart({super.key});
 
   @override
   State<COChart> createState() => _COChartState();

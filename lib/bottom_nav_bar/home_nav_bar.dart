@@ -11,6 +11,8 @@ import '../pages/dashboard_screens/dashboard_screen.dart';
 import 'my_bottom_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }

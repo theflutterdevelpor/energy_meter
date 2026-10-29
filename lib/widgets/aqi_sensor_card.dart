@@ -6,7 +6,7 @@ import '../models/response/aqi_response.dart';
 import '../services/aqi_service.dart';
 
 class AirQualityScreen extends StatefulWidget {
-  const AirQualityScreen({Key? key}) : super(key: key);
+  const AirQualityScreen({super.key});
 
   @override
   State<AirQualityScreen> createState() => _AirQualityScreenState();
@@ -128,7 +128,7 @@ class _AirQualityScreenState extends State<AirQualityScreen> {
                       width: screenWidth * 0.38,
                       height: screenHeight * 0.055,
                       child: DropdownButtonFormField<String>(
-                        value: aqi.deviceId,
+                        initialValue: aqi.deviceId,
                         decoration: InputDecoration(
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: screenWidth * 0.03,

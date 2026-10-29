@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class AQIChart extends StatefulWidget {
-  const AQIChart({Key? key}) : super(key: key);
+  const AQIChart({super.key});
 
   @override
   State<AQIChart> createState() => _AQIChartState();

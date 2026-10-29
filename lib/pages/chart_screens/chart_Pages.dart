@@ -1,25 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../models/response/profile_response.dart';
-import '../../services/auth_services.dart';
 import '../../services/notification_service.dart';
 import '../../services/profile_services.dart';
 import '../../widgets/apparent_power.dart';
-import '../../widgets/aqi_chart.dart';
-import '../../widgets/co2_chart.dart';
-import '../../widgets/co_chart.dart';
-import '../../widgets/contact_chart.dart';
 import '../../widgets/current_chart.dart';
 import '../../widgets/energy_power_chart.dart';
 import '../../widgets/frequency_chart.dart';
-import '../../widgets/humidity_chart.dart';
-import '../../widgets/motion_chart.dart';
 import '../../widgets/notification.dart';
 import '../../widgets/power_bar_chart.dart';
 import '../../widgets/power_factor_chart.dart';
 import '../../widgets/profile_drawer.dart';
 import '../../widgets/reactive_power.dart';
-import '../../widgets/smoke_chart.dart';
-import '../../widgets/tempreture_chart.dart';
 import '../../widgets/voltage_chart.dart';
 
 class chartPage extends StatefulWidget {
@@ -248,11 +239,11 @@ class _chartPageState extends State<chartPage> {
                   return CircleAvatar(
                     backgroundColor: Colors.green.shade100,
                     backgroundImage: (profile?.image?.url != null &&
-                        profile!.image!.url!.isNotEmpty)
-                        ? NetworkImage(profile.image!.url!)
+                        profile!.image!.url.isNotEmpty)
+                        ? NetworkImage(profile.image!.url)
                         : null,
                     child: (profile?.image?.url == null ||
-                        profile?.image?.url?.isEmpty == true)
+                        profile?.image?.url.isEmpty == true)
                         ? Text(
                       profile?.name.isNotEmpty == true
                           ? profile!.name[0].toUpperCase()

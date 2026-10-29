@@ -359,6 +359,9 @@ class _DashboardCardState extends State<DashboardCard> {
       offset: const Offset(0, 40),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 8,
+      onSelected: onChanged,
+      itemBuilder: (context) =>
+          items.map((item) => PopupMenuItem(value: item, child: Text(item))).toList(),
       child: Container(
         height: height,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -396,9 +399,6 @@ class _DashboardCardState extends State<DashboardCard> {
           ],
         ),
       ),
-      onSelected: onChanged,
-      itemBuilder: (context) =>
-          items.map((item) => PopupMenuItem(value: item, child: Text(item))).toList(),
     );
   }
 }

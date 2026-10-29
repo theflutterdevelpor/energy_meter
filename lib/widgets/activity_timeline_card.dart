@@ -304,7 +304,7 @@ class EventScreen extends StatelessWidget {
 class CalendarHeader extends StatelessWidget {
   final List<Map<String, dynamic>> days;
 
-  const CalendarHeader({Key? key, required this.days}) : super(key: key);
+  const CalendarHeader({super.key, required this.days});
 
   @override
   Widget build(BuildContext context) {
@@ -339,12 +339,12 @@ class DayCard extends StatelessWidget {
   final bool hasEvent;
 
   const DayCard({
-    Key? key,
+    super.key,
     required this.date,
     required this.dayOfWeek,
     required this.isSelected,
     required this.hasEvent,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -405,7 +405,7 @@ class EventTile extends StatelessWidget {
   final Event event;
   final Color tileColor;
 
-  const EventTile({Key? key, required this.event, required this.tileColor}) : super(key: key);
+  const EventTile({super.key, required this.event, required this.tileColor});
 
   @override
   Widget build(BuildContext context) {

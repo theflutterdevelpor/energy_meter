@@ -5,7 +5,7 @@ import '../services/energy_services.dart';
 
 class PhaseEnergyWidget extends StatefulWidget {
   final Map<String, dynamic>? realtimeData;
-  const PhaseEnergyWidget({Key? key, this.realtimeData}) : super(key: key);
+  const PhaseEnergyWidget({super.key, this.realtimeData});
 
   @override
   State<PhaseEnergyWidget> createState() => _PhaseEnergyWidgetState();

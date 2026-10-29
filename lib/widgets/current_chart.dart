@@ -6,7 +6,7 @@ import '../services/energy_services.dart';
 class CurrentChart extends StatefulWidget {
   final String selectedFilter;
   final String selectedPhase;
-  const CurrentChart({Key? key, required this.selectedFilter,required this.selectedPhase}) : super(key: key);
+  const CurrentChart({super.key, required this.selectedFilter,required this.selectedPhase});
 
   @override
   State<CurrentChart> createState() => _CurrentChartState();

@@ -235,11 +235,11 @@ class ApiService {
             print('SUCCESS: ${data.deviceId} loaded');
           } else {
             failCount++;
-            print('WARNING: ${deviceId} returned null');
+            print('WARNING: $deviceId returned null');
           }
         } catch (e) {
           failCount++;
-          print('FAILED: ${deviceId} - $e');
+          print('FAILED: $deviceId - $e');
           continue;
         }
       }

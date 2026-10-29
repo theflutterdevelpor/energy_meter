@@ -1,12 +1,9 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../login_screen.dart';
 import '../models/response/profile_response.dart';
 import '../services/profile_services.dart';
 import 'about_screen.dart';
-import 'add_device.dart';
 import 'configration_screen.dart';
 import 'edit_profile.dart';
 
@@ -84,11 +81,11 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                       radius: 28,
                       backgroundColor: Colors.green.shade100,
                       backgroundImage: (_profile?.image?.url != null &&
-                          _profile!.image!.url!.isNotEmpty)
-                          ? NetworkImage(_profile!.image!.url!)
+                          _profile!.image!.url.isNotEmpty)
+                          ? NetworkImage(_profile!.image!.url)
                           : null,
                       child: (_profile?.image?.url == null ||
-                          _profile!.image!.url!.isEmpty)
+                          _profile!.image!.url.isEmpty)
                           ? Text(
                         _profile?.name.isNotEmpty == true
                             ? _profile!.name[0].toUpperCase()

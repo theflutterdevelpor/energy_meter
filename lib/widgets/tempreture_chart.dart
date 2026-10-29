@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class TemperatureChart extends StatefulWidget {
-  const TemperatureChart({Key? key}) : super(key: key);
+  const TemperatureChart({super.key});
 
   @override
   State<TemperatureChart> createState() => _TemperatureChartState();

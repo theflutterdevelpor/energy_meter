@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class HumidityChart extends StatefulWidget {
-  const HumidityChart({Key? key}) : super(key: key);
+  const HumidityChart({super.key});
 
   @override
   State<HumidityChart> createState() => _HumidityChartState();

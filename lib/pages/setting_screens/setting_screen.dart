@@ -186,7 +186,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
 class MyData extends DataTableSource {
   final BuildContext context;
   final VoidCallback onRefresh;
-  List<UserData> _original;
+  final List<UserData> _original;
   List<UserData> _filtered;
 
   MyData({required this.context,required this.onRefresh, required List<UserData> users})

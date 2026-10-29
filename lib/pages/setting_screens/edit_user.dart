@@ -412,7 +412,7 @@ class _EditUserState extends State<EditUser> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _selectedPriority, // Yeh "Active" ya "Inactive" hona chahiye
+                  initialValue: _selectedPriority, // Yeh "Active" ya "Inactive" hona chahiye
                   hint: Text(
                     'Select Status',
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -571,7 +571,7 @@ class _EditUserState extends State<EditUser> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: roles.any((r) => r['_id'] == selectedRoleId)
+                  initialValue: roles.any((r) => r['_id'] == selectedRoleId)
                       ? selectedRoleId
                       : null,
                   hint: Text(
@@ -625,7 +625,7 @@ class _EditUserState extends State<EditUser> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: buildings.any((b) => b['_id'] == selectedBuildingId)
+                  initialValue: buildings.any((b) => b['_id'] == selectedBuildingId)
                       ? selectedBuildingId
                       : null,
                   hint: Text(
@@ -691,7 +691,7 @@ class _EditUserState extends State<EditUser> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: floors.any((f) => f['_id'] == selectedFloorId)
+                  initialValue: floors.any((f) => f['_id'] == selectedFloorId)
                       ? selectedFloorId
                       : null,
                   hint: Text(

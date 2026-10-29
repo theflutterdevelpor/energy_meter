@@ -63,7 +63,9 @@ class _DeviceReadingFormState extends State<DeviceReadingForm> {
     _maxLoadCtrl.dispose();
     _readingDateCtrl.dispose();
     _taxCtrl.dispose();
-    for (var s in _slabs) s.dispose();
+    for (var s in _slabs) {
+      s.dispose();
+    }
     super.dispose();
   }
 
@@ -483,7 +485,9 @@ class _DeviceReadingFormState extends State<DeviceReadingForm> {
       _taxCtrl.text = (jsonData['taxPercentage'] ?? '').toString();
 
       if (jsonData['unitPriceSlabs'] != null) {
-        for (var slab in _slabs) slab.dispose();
+        for (var slab in _slabs) {
+          slab.dispose();
+        }
         _slabs.clear();
 
         for (var slab in jsonData['unitPriceSlabs']) {
@@ -532,7 +536,7 @@ class _DeviceReadingFormState extends State<DeviceReadingForm> {
         _label(label),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           validator: validator,
           onChanged: onChanged,
           hint: Text('Select…', style: TextStyle(color: _muted, fontSize: 13)),

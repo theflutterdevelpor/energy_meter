@@ -632,7 +632,7 @@ class MyMaintenanceData extends DataTableSource {
   DataRow getRow(int index) {
     final complaint = complaints[index];
 
-    Color _getStatusColor(String status) {
+    Color getStatusColor(String status) {
       switch (status.toLowerCase()) {
         case 'open':
           return Colors.blue;
@@ -743,7 +743,7 @@ class MyMaintenanceData extends DataTableSource {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _getStatusColor(complaint.status).withOpacity(0.15),
+                color: getStatusColor(complaint.status).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(complaint.status,

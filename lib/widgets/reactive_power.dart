@@ -6,7 +6,7 @@ import '../services/energy_services.dart';
 class ReactiveBarChart extends StatefulWidget {
   final String selectedFilter;
   final String selectedPhase;
-  const ReactiveBarChart({Key? key , required this.selectedFilter,required this.selectedPhase,}) : super(key: key);
+  const ReactiveBarChart({super.key , required this.selectedFilter,required this.selectedPhase,});
 
   @override
   State<ReactiveBarChart> createState() => _ReactiveBarChartState();

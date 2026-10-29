@@ -180,7 +180,7 @@ class _VendorsPageState extends State<VendorsPage> {
 
 // ==================== DATA SOURCE WITH CONTEXT ====================
 class MyData extends DataTableSource {
-  List<Map<String, dynamic>> _originalData;
+  final List<Map<String, dynamic>> _originalData;
   List<Map<String, dynamic>> _filteredData;
   late BuildContext context;
 

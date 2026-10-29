@@ -6,7 +6,7 @@ import '../services/energy_services.dart';
 class ApparentPowerChart extends StatefulWidget {
   final String selectedFilter;
   final String selectedPhase;
-  const ApparentPowerChart({Key? key, required this.selectedFilter,required this.selectedPhase,}) : super(key: key);
+  const ApparentPowerChart({super.key, required this.selectedFilter,required this.selectedPhase,});
 
   @override
   State<ApparentPowerChart> createState() => _ApparentPowerChartState();
